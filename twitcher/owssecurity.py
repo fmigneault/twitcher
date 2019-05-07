@@ -86,7 +86,7 @@ class OWSSecurity(object):
                 service_name = parse_service_name(request.path, protected_path)
                 service = self.servicestore.fetch_by_name(service_name)
                 if service.public is True:
-                    LOGGER.warn('public access for service %s', service_name)
+                    LOGGER.warning('public access for service %s', service_name)
             except ServiceNotFound:
                 # TODO: why not raising an exception?
                 service = Service(url='unregistered', public=False, auth='token')
