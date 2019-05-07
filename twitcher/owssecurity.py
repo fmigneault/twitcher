@@ -90,7 +90,7 @@ class OWSSecurity(object):
             except ServiceNotFound:
                 # TODO: why not raising an exception?
                 service = Service(url='unregistered', public=False, auth='token')
-                LOGGER.warn("Service not registered.")
+                LOGGER.warning("Service not registered.")
             ows_request = OWSRequest(request)
             if not ows_request.service_allowed():
                 raise OWSInvalidParameterValue(
