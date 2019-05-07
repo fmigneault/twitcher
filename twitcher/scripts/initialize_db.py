@@ -14,6 +14,8 @@ def setup_models(dbsession):
     """
     model = models.mymodel.MyModel(name='one', value=1)
     dbsession.add(model)
+    model = models.token.AccessToken(token='123', expires_at='60')
+    dbsession.add(model)
 
 
 def parse_args(argv):
