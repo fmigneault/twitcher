@@ -4,6 +4,11 @@ pyramid>=1.10
 pyramid_rpc
 pyramid_debugtoolbar
 pyramid_retry
+pyramid_tm
+alembic
+SQLAlchemy
+transaction
+zope.sqlalchemy
 webob
 requests
 requests_oauthlib
