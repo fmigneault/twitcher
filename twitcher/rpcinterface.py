@@ -17,7 +17,7 @@ class RPCInterface(ITokenManager, IRegistry):
     def __init__(self, request):
         self.request = request
         self.tokenmgr = TokenManager(
-            tokengenerator_factory(request.registry),
+            tokengenerator_factory(request),
             tokenstore_factory(request))
         self.srvreg = Registry(servicestore_factory(request.registry))
 

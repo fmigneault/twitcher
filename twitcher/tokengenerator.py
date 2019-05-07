@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def tokengenerator_factory(registry):
+def tokengenerator_factory(request):
     return UuidTokenGenerator()
 
 
