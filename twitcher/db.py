@@ -4,6 +4,8 @@
 
 import pymongo
 
+import transaction
+
 
 def mongodb(registry):
     settings = registry.settings
