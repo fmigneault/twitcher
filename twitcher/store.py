@@ -62,7 +62,7 @@ class ServiceStore(object):
 
     def save_service(self, service, overwrite=True):
         """
-        Stores an OWS service in storage.
+        Stores an OWS service in database.
 
         :param service: An instance of :class:`twitcher.datatype.Service`.
         """
@@ -74,26 +74,29 @@ class ServiceStore(object):
             public=service.public,
             verify=service.verify,
             auth=service.auth))
-        return True
 
     def delete_service(self, name):
         """
-        Removes service from database.
+        Removes service identified by name.
         """
-        return True
+        query = self.request.dbsession.query(models.Service)
+        one = query.filter(models.Service.name == name).first()
+        self.request.dbsession.delete(one)
 
     def list_services(self):
         """
-        Lists all services in database.
+        Lists all services.
+
+        :return: A list with instances of :class:`twitcher.datatype.Service`.
         """
-        my_services = []
-        return my_services
+        services = self.request.dbsession.query(models.Service).all()
+        return [datatype.Service.from_model(service) for service in services]
 
     def fetch_by_name(self, name):
         """
-        Get service for given ``name`` from storage.
+        Get service for given service ``name``.
 
-        :param token: A string containing the service name.
+        :param name: A service name string.
         :return: An instance of :class:`twitcher.datatype.Service`.
         """
         query = self.request.dbsession.query(models.Service)
@@ -102,9 +105,9 @@ class ServiceStore(object):
 
     def fetch_by_url(self, url):
         """
-        Get service for given ``url`` from storage.
+        Get a service for given ``url``.
 
-        :param token: A string containing the service url.
+        :param url: A URL string.
         :return: An instance of :class:`twitcher.datatype.Service`.
         """
         query = self.request.dbsession.query(models.Service)
@@ -113,6 +116,6 @@ class ServiceStore(object):
 
     def clear_services(self):
         """
-        Removes all OWS services from storage.
+        Removes all services.
         """
-        return True
+        self.request.dbsession.query(models.Service).delete()
