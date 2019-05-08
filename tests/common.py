@@ -12,6 +12,10 @@ WMS_CAPS_NCWMS2_111_XML = os.path.join(RESOURCES_PATH, 'wms_caps_ncwms2_111.xml'
 WMS_CAPS_NCWMS2_130_XML = os.path.join(RESOURCES_PATH, 'wms_caps_ncwms2_130.xml')
 
 
+def dummy_request(dbsession):
+    return testing.DummyRequest(dbsession=dbsession)
+
+
 class DBTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={

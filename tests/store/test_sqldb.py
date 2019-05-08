@@ -3,10 +3,11 @@ Based on unitests in https://github.com/wndhydrnt/python-oauth2/tree/master/oaut
 """
 
 import pytest
-from .. common import DBTest
+from .. common import DBTest, dummy_request
 
 from twitcher.utils import expires_at
-from twitcher.store.sqldb import SQLDBTokenStore, SQLDBServiceStore
+from twitcher.store import tokenstore_factory, servicestore_factory
+from twitcher.models import AccessToken, Service
 
 
 class SQLDBTokenStoreTestCase(DBTest):
@@ -14,16 +15,15 @@ class SQLDBTokenStoreTestCase(DBTest):
         super(SQLDBTokenStoreTestCase, self).setUp()
         self.init_database()
 
-        from twitcher.models import AccessToken
-
-        model = AccessToken(token="abcdef", expires_at=expires_at(hours=1))
-        self.session.add(model)
+        self.token_store = tokenstore_factory(
+            dummy_request(dbsession=self.session))
 
     def test_fetch_by_token(self):
         pass
 
     def test_save_token(self):
-        pass
+        self.token_store.save_token(
+            AccessToken(token="abc", expires_at=expires_at(hours=1)))
 
 
 class SQLDBServiceStoreTestCase(DBTest):
@@ -31,26 +31,20 @@ class SQLDBServiceStoreTestCase(DBTest):
         super(SQLDBServiceStoreTestCase, self).setUp()
         self.init_database()
 
-        from twitcher.models import Service
-
-        model = Service(
-            name="loving_flamingo",
-            url="http://somewhere.over.the/ocean",
-            type="wps",
-            # public=False,
-            auth='token',
-            # verify=True,
-            purl="http://purl/wps")
-        self.session.add(model)
+        self.service_store = servicestore_factory(
+            dummy_request(dbsession=self.session))
 
     def test_fetch_by_name(self):
         pass
 
-    def test_save_service_default(self):
-        pass
-
-    def test_save_service_with_special_name(self):
-        pass
-
-    def test_save_service_public(self):
-        pass
+    def test_save_service(self):
+        self.service_store.save_service(
+            Service(
+                name="loving_flamingo",
+                url="http://somewhere.over.the/ocean",
+                type="wps",
+                # public=False,
+                auth='token',
+                # verify=True,
+                purl="http://purl/wps")
+        )
