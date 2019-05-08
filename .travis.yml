@@ -24,10 +24,10 @@ install:
   - pip install -r requirements_dev.txt
   # Install twitcher
   - python setup.py install
-before_script:
+#before_script:
   # Start WPS service on port 6000
-  - pserve development.ini &
-  - sleep 2
+  #- pserve development.ini &
+  #- sleep 2
 script:
   - pytest -v -m 'not online' tests/
   - flake8
