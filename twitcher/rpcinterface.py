@@ -5,8 +5,7 @@ from pyramid.settings import asbool
 from twitcher.api import ITokenManager, TokenManager
 from twitcher.api import IRegistry, Registry
 from twitcher.tokengenerator import tokengenerator_factory
-from twitcher.store import tokenstore_factory
-from twitcher.store import servicestore_factory
+from .store import AccessTokenStore, ServiceStore
 
 import logging
 LOGGER = logging.getLogger("TWITCHER")
@@ -18,8 +17,8 @@ class RPCInterface(ITokenManager, IRegistry):
         self.request = request
         self.tokenmgr = TokenManager(
             tokengenerator_factory(request),
-            tokenstore_factory(request))
-        self.srvreg = Registry(servicestore_factory(request))
+            AccessTokenStore(request))
+        self.srvreg = Registry(ServiceStore(request))
 
     def generate_token(self, valid_in_hours=1, environ=None):
         """
