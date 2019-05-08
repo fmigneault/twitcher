@@ -1,3 +1,5 @@
+from twitcher import datatype
+
 import logging
 LOGGER = logging.getLogger("TWITCHER")
 
@@ -130,7 +132,7 @@ class Registry(IRegistry):
 
         args = dict(data)
         args['url'] = url
-        service = Service(**args)
+        service = datatype.Service(**args)
         self.store.save_service(service, overwrite=overwrite)
         return service.params
 

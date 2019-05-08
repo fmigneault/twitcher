@@ -1,11 +1,12 @@
 import tempfile
 
-from .exceptions import AccessTokenNotFound, ServiceNotFound
-from .owsexceptions import OWSAccessForbidden, OWSInvalidParameterValue
-from .store import AccessTokenStore, ServiceStore
-from .utils import path_elements, parse_service_name
-from .owsrequest import OWSRequest
-from .esgf import fetch_certificate, ESGF_CREDENTIALS
+from twitcher.exceptions import AccessTokenNotFound, ServiceNotFound
+from twitcher.owsexceptions import OWSAccessForbidden, OWSInvalidParameterValue
+from twitcher.store import AccessTokenStore, ServiceStore
+from twitcher import datatype
+from twitcher.utils import path_elements, parse_service_name
+from twitcher.owsrequest import OWSRequest
+from twitcher.esgf import fetch_certificate, ESGF_CREDENTIALS
 
 import logging
 LOGGER = logging.getLogger("TWITCHER")
@@ -85,7 +86,7 @@ class OWSSecurity(object):
                     LOGGER.warning('public access for service %s', service_name)
             except ServiceNotFound:
                 # TODO: why not raising an exception?
-                service = Service(url='unregistered', public=False, auth='token')
+                service = datatype.Service(url='unregistered', public=False, auth='token')
                 LOGGER.warning("Service not registered.")
             ows_request = OWSRequest(request)
             if not ows_request.service_allowed():
