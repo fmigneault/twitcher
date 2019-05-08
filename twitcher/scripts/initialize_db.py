@@ -19,8 +19,8 @@ def setup_models(dbsession):
     model = models.service.Service(
         name='wps',
         url='http://localhost:5000/wps',
-        public=True,
-        verify=False,
+        # public=True,
+        # verify=False,
         purl=None,
         type='WPS',
         auth=None)

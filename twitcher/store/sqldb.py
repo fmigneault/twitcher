@@ -46,15 +46,15 @@ class SQLDBServiceStore(ServiceStore):
     def __init__(self, request):
         self.request = request
 
-    def save_service(self, service):
+    def save_service(self, service, overwrite=True):
         self.request.dbsession.add(models.Service(
             name=service.name,
             url=baseurl(service.url),
             type=service.type,
             purl=service.purl,
-            public=service.public,
-            auth=service.auth,
-            verify=service.verify))
+            # public=service.public,
+            # verify=service.verify
+            auth=service.auth))
         return True
 
     def delete_service(self, name):

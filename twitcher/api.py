@@ -133,7 +133,7 @@ class Registry(IRegistry):
         args = dict(data)
         args['url'] = url
         service = Service(**args)
-        service = self.store.save_service(service, overwrite=overwrite)
+        self.store.save_service(service, overwrite=overwrite)
         return service.params
 
     def unregister_service(self, name):

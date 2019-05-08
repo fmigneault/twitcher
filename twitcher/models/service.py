@@ -16,9 +16,9 @@ class Service(Base):
     name = Column(Text)
     type = Column(Text)
     purl = Column(Text)
-    public = Column(Boolean)
+    # public = Column(Boolean)
     auth = Column(Text)
-    verify = Column(Boolean)
+    # verify = Column(Boolean)
 
 
 Index('name_index', Service.name, unique=True, mysql_length=255)
