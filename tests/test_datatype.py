@@ -30,11 +30,6 @@ class AccessTokenTestCase(unittest.TestCase):
         assert access_token.expires_in == 0
         assert access_token.is_expired() is True
 
-    def test_access_token_with_data(self):
-        access_token = AccessToken(token='12345', expires_at=expires_at(hours=1),
-                                   data={'esgf_token': 'bfghk'})
-        assert access_token.data == {'esgf_token': 'bfghk'}
-
     def test_access_token_from_model(self):
         access_token = AccessToken.from_model(
             models.AccessToken(token='abc', expires_at=expires_at(hours=2)))

@@ -35,16 +35,6 @@ class TokenManagerTest(BaseTest):
         resp = self.tokenmgr.revoke_all_tokens()
         assert resp is True
 
-    @pytest.mark.skip(reason="fix test")
-    def test_generate_token_with_data(self):
-        # gentoken
-        resp = self.tokenmgr.generate_token(valid_in_hours=1, data={'esgf_token': 'abcdef'})
-        assert 'access_token' in resp
-        assert 'expires_at' in resp
-        # check data
-        access_token = self.tokenmgr.store.fetch_by_token(resp['access_token'])
-        assert access_token.data == {'esgf_token': 'abcdef'}
-
 
 class RegistryTest(BaseTest):
 
