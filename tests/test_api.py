@@ -3,14 +3,14 @@ Testing the Twitcher API.
 """
 import pytest
 
-from .common import DBTest, dummy_request
+from .common import BaseTest, dummy_request
 
 from twitcher.store import tokenstore_factory, servicestore_factory
 from twitcher.api import TokenManager, Registry
 from twitcher.tokengenerator import UuidTokenGenerator
 
 
-class TokenManagerTest(DBTest):
+class TokenManagerTest(BaseTest):
 
     def setUp(self):
         super(TokenManagerTest, self).setUp()
@@ -45,7 +45,7 @@ class TokenManagerTest(DBTest):
         assert access_token.data == {'esgf_token': 'abcdef'}
 
 
-class RegistryTest(DBTest):
+class RegistryTest(BaseTest):
 
     def setUp(self):
         super(RegistryTest, self).setUp()

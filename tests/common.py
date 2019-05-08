@@ -16,7 +16,7 @@ def dummy_request(dbsession):
     return testing.DummyRequest(dbsession=dbsession)
 
 
-class DBTest(unittest.TestCase):
+class BaseTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={
             'sqlalchemy.url': 'sqlite:///:memory:'

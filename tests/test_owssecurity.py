@@ -3,7 +3,7 @@ import pytest
 from pyramid.testing import DummyRequest, testConfig
 from pyramid.testing import Registry
 
-from .common import DBTest, dummy_request
+from .common import BaseTest, dummy_request
 
 from twitcher.store import tokenstore_factory, servicestore_factory
 from twitcher.datatype import Service
@@ -12,7 +12,7 @@ from twitcher.owssecurity import OWSSecurity
 from twitcher.owsexceptions import OWSAccessForbidden
 
 
-class OWSSecurityTestCase(DBTest):
+class OWSSecurityTestCase(BaseTest):
     def setUp(self):
         super(OWSSecurityTestCase, self).setUp()
         self.init_database()

@@ -3,14 +3,14 @@ Based on unitests in https://github.com/wndhydrnt/python-oauth2/tree/master/oaut
 """
 
 import pytest
-from .common import DBTest, dummy_request
+from .common import BaseTest, dummy_request
 
 from twitcher.utils import expires_at
 from twitcher.store import tokenstore_factory, servicestore_factory
 from twitcher.models import AccessToken, Service
 
 
-class SQLDBTokenStoreTestCase(DBTest):
+class SQLDBTokenStoreTestCase(BaseTest):
     def setUp(self):
         super(SQLDBTokenStoreTestCase, self).setUp()
         self.init_database()
@@ -26,7 +26,7 @@ class SQLDBTokenStoreTestCase(DBTest):
             AccessToken(token="abc", expires_at=expires_at(hours=1)))
 
 
-class SQLDBServiceStoreTestCase(DBTest):
+class SQLDBServiceStoreTestCase(BaseTest):
     def setUp(self):
         super(SQLDBServiceStoreTestCase, self).setUp()
         self.init_database()
