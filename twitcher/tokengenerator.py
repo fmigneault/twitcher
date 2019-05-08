@@ -5,9 +5,7 @@ Provides various implementations of algorithms to generate an Access Token.
 import uuid
 
 from twitcher.utils import expires_at
-
-import logging
-logger = logging.getLogger(__name__)
+from twitcher import datatype
 
 
 def tokengenerator_factory(request):
@@ -26,7 +24,7 @@ class TokenGenerator(object):
         TODO: maybe specify how often a token can be used
         """
         data = data or {}
-        token = AccessToken(
+        token = datatype.AccessToken(
             token=self.generate(),
             expires_at=expires_at(hours=valid_in_hours),
             data=data)
