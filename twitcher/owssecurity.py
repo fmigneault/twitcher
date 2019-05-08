@@ -16,7 +16,7 @@ LOGGER = logging.getLogger("TWITCHER")
 
 
 def owssecurity_factory(request):
-    return OWSSecurity(tokenstore_factory(request), servicestore_factory(request.registry))
+    return OWSSecurity(tokenstore_factory(request), servicestore_factory(request))
 
 
 def verify_cert(request):

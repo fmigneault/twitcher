@@ -137,7 +137,7 @@ def owsproxy(request):
     try:
         service_name = request.matchdict.get('service_name')
         extra_path = request.matchdict.get('extra_path')
-        store = servicestore_factory(request.registry)
+        store = servicestore_factory(request)
         service = store.fetch_by_name(service_name)
     except Exception as err:
         # TODO: Store impl should raise appropriate exception like not authorized

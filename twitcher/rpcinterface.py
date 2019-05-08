@@ -19,7 +19,7 @@ class RPCInterface(ITokenManager, IRegistry):
         self.tokenmgr = TokenManager(
             tokengenerator_factory(request),
             tokenstore_factory(request))
-        self.srvreg = Registry(servicestore_factory(request.registry))
+        self.srvreg = Registry(servicestore_factory(request))
 
     def generate_token(self, valid_in_hours=1, environ=None):
         """

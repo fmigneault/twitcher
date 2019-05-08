@@ -7,6 +7,7 @@ import zope.sqlalchemy
 # Base.metadata prior to any initialization routines
 from .mymodel import MyModel  # flake8: noqa
 from .token import AccessToken  # flake8: noqa
+from .service import Service  # flake8: noqa
 
 # run configure_mappers after defining all of the models to ensure
 # all relationships can be setup
