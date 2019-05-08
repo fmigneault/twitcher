@@ -47,7 +47,6 @@ class RegistryTest(BaseTest):
 
         self.reg = Registry(servicestore=service_store)
 
-    @pytest.mark.skip(reason="fix test")
     def test_register_service_and_unregister_it(self):
         service = {'url': 'http://localhost/wps', 'name': 'test_emu',
                    'type': 'wps', 'public': False, 'auth': 'token', 'verify': True,
