@@ -4,7 +4,6 @@ Provides various implementations of algorithms to generate an Access Token.
 
 import uuid
 
-from twitcher.datatype import AccessToken
 from twitcher.utils import expires_at
 
 import logging

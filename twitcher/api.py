@@ -1,5 +1,3 @@
-from twitcher.datatype import Service
-
 import logging
 LOGGER = logging.getLogger("TWITCHER")
 

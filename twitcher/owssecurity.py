@@ -9,7 +9,6 @@ from twitcher.store import servicestore_factory
 from twitcher.utils import parse_service_name
 from twitcher.owsrequest import OWSRequest
 from twitcher.esgf import fetch_certificate, ESGF_CREDENTIALS
-from twitcher.datatype import Service
 
 import logging
 LOGGER = logging.getLogger("TWITCHER")
