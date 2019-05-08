@@ -6,7 +6,7 @@ from pyramid.testing import Registry
 from .common import BaseTest, dummy_request
 
 from twitcher.store import AccessTokenStore, ServiceStore
-from twitcher.datatype import Service
+from twitcher.datatype import AccessToken, Service
 from twitcher.utils import expires_at
 from twitcher.owssecurity import OWSSecurity
 from twitcher.owsexceptions import OWSAccessForbidden
@@ -19,7 +19,9 @@ class OWSSecurityTestCase(BaseTest):
 
         request = dummy_request(dbsession=self.session)
         token_store = AccessTokenStore(request)
+        token_store.save_token(AccessToken(token='test_token', expires_at=expires_at(hours=1)))
         service_store = ServiceStore(request)
+        service_store.save_service(Service(name='test_wps', url='http://my/wps'))
 
         self.security = OWSSecurity(tokenstore=token_store, servicestore=service_store)
 
@@ -42,10 +44,10 @@ class OWSSecurityTestCase(BaseTest):
         token = self.security.get_token_param(request)
         assert token == "54321"
 
-    @pytest.mark.skip(reason="fix test")
+    # @pytest.mark.skip(reason="fix test")
     def test_check_request(self):
-        params = dict(request="Execute", service="WPS", version="1.0.0", token="cdefg")
-        request = DummyRequest(params=params, path='/ows/proxy/emu')
+        params = dict(request="Execute", service="WPS", version="1.0.0", token="test_token")
+        request = DummyRequest(params=params, path='/ows/proxy/test_wps')
         request.registry = Registry()
         request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
         self.security.check_request(request)
