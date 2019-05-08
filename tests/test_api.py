@@ -2,22 +2,25 @@
 Testing the Twitcher API.
 """
 import pytest
-import unittest
 
-from twitcher.api import TokenManager
+from .common import DBTest, dummy_request
+
+from twitcher.store import tokenstore_factory, servicestore_factory
+from twitcher.api import TokenManager, Registry
 from twitcher.tokengenerator import UuidTokenGenerator
-from twitcher.store.memory import MemoryTokenStore
-
-from twitcher.api import Registry
-from twitcher.store.memory import MemoryServiceStore
 
 
-class TokenManagerTest(unittest.TestCase):
+class TokenManagerTest(DBTest):
 
     def setUp(self):
+        super(TokenManagerTest, self).setUp()
+        self.init_database()
+
+        token_store = tokenstore_factory(
+            dummy_request(dbsession=self.session))
         self.tokenmgr = TokenManager(
             tokengenerator=UuidTokenGenerator(),
-            tokenstore=MemoryTokenStore()
+            tokenstore=token_store
         )
 
     def test_generate_token_and_revoke_it(self):
@@ -42,10 +45,16 @@ class TokenManagerTest(unittest.TestCase):
         assert access_token.data == {'esgf_token': 'abcdef'}
 
 
-class RegistryTest(unittest.TestCase):
+class RegistryTest(DBTest):
 
     def setUp(self):
-        self.reg = Registry(servicestore=MemoryServiceStore())
+        super(RegistryTest, self).setUp()
+        self.init_database()
+
+        service_store = servicestore_factory(
+            dummy_request(dbsession=self.session))
+
+        self.reg = Registry(servicestore=service_store)
 
     def test_register_service_and_unregister_it(self):
         service = {'url': 'http://localhost/wps', 'name': 'test_emu',
