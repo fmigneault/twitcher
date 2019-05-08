@@ -5,8 +5,8 @@ Based on unitests in https://github.com/wndhydrnt/python-oauth2/tree/master/oaut
 import pytest
 import unittest
 
-from twitcher.datatype import AccessToken
-from twitcher.datatype import Service
+from twitcher.datatype import AccessToken, Service
+from twitcher import models
 from twitcher.utils import expires_at
 
 
@@ -34,6 +34,11 @@ class AccessTokenTestCase(unittest.TestCase):
         access_token = AccessToken(token='12345', expires_at=expires_at(hours=1),
                                    data={'esgf_token': 'bfghk'})
         assert access_token.data == {'esgf_token': 'bfghk'}
+
+    def test_access_token_from_model(self):
+        access_token = AccessToken.from_model(
+            models.AccessToken(token='abc', expires_at=expires_at(hours=2)))
+        assert access_token.token == 'abc'
 
 
 class ServiceTestCase(unittest.TestCase):
@@ -63,3 +68,8 @@ class ServiceTestCase(unittest.TestCase):
                                   'verify': True,
                                   'purl': 'http://myservice/wps'}
         assert service.has_purl() is True
+
+    def test_service_from_model(self):
+        service = Service.from_model(
+            models.Service(name='wps', url='http://nowhere/wps'))
+        assert service.name == 'wps'
