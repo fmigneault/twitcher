@@ -20,7 +20,7 @@ class MemoryTokenStore(AccessTokenStore):
     Stores tokens in memory.
     Useful for testing purposes or APIs with a very limited set of clients.
 
-    Use mongodb as storage to be able to scale.
+    Use sqldb as storage to be able to scale.
     """
     def __init__(self):
         self.access_tokens = {}

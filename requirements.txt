@@ -18,4 +18,3 @@ alembic
 SQLAlchemy
 transaction
 zope.sqlalchemy
-pymongo

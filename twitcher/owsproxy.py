@@ -186,8 +186,6 @@ def includeme(config):
         else:
             # include twitcher config
             config.include('twitcher.config')
-            # include mongodb
-            # config.include('twitcher.db')
             config.add_view(owsproxy, route_name='owsproxy')
             config.add_view(owsproxy, route_name='owsproxy_secured')
             config.add_view(owsproxy, route_name='owsproxy_extra')
