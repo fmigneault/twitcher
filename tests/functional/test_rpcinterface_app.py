@@ -1,29 +1,27 @@
 """
-Testing the Twithcer XML-RPC interface.
+Testing the Twitcher XML-RPC interface.
 """
 import pytest
-import unittest
 import webtest
-import pyramid.testing
 
-from .common import call_FUT
-from .common import setup_with_mongodb
-from .common import setup_mongodb_tokenstore
-from .common import setup_mongodb_servicestore
-from .common import WPS_TEST_SERVICE
+from .. common import BaseTest, dummy_request, call_FUT, WPS_TEST_SERVICE
+
+from twitcher.store import ServiceStore
+from twitcher.datatype import Service
 
 
-class XMLRPCInterfaceAppTest(unittest.TestCase):
+class XMLRPCInterfaceAppTest(BaseTest):
 
     def setUp(self):
-        config = setup_with_mongodb()
-        self.token = setup_mongodb_tokenstore(config)
-        setup_mongodb_servicestore(config)
-        config.include('twitcher.rpcinterface')
-        self.app = webtest.TestApp(config.make_wsgi_app())
+        super(XMLRPCInterfaceAppTest, self).setUp()
+        self.init_database()
 
-    def tearDown(self):
-        pyramid.testing.tearDown()
+        service_store = ServiceStore(
+            dummy_request(dbsession=self.session))
+        service_store.save_service(Service(name='wps', url=WPS_TEST_SERVICE))
+
+        self.config.include('twitcher.rpcinterface')
+        self.app = webtest.TestApp(self.config.make_wsgi_app())
 
     @pytest.mark.online
     def test_generate_token_and_revoke_it(self):
@@ -40,7 +38,7 @@ class XMLRPCInterfaceAppTest(unittest.TestCase):
 
     @pytest.mark.online
     def test_register_service_and_unregister_it(self):
-        service = {'url': WPS_TEST_SERVICE, 'name': 'test_emu',
+        service = {'url': WPS_TEST_SERVICE, 'name': 'wps',
                    'type': 'wps', 'public': False, 'auth': 'token',
                    'verify': True, 'purl': 'http://purl/wps'}
         # register

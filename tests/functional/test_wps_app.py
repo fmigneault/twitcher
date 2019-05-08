@@ -7,27 +7,31 @@ Based on tests from:
 * http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/testing.html
 """
 import pytest
-import unittest
 import webtest
-import pyramid.testing
 
-from .common import call_FUT
-from .common import setup_with_mongodb, setup_mongodb_tokenstore
-from .common import WPS_TEST_SERVICE
+from .. common import BaseTest, dummy_request, call_FUT, WPS_TEST_SERVICE
+
+from twitcher.store import ServiceStore
+from twitcher.datatype import Service
 
 
-class WpsAppTest(unittest.TestCase):
+class WpsAppTest(BaseTest):
 
     def setUp(self):
-        config = setup_with_mongodb()
-        self.token = setup_mongodb_tokenstore(config)
-        config.include('twitcher.rpcinterface')
-        config.include('twitcher.owsproxy')
-        config.include('twitcher.tweens')
-        self.app = webtest.TestApp(config.make_wsgi_app())
-        self.wps_path = '/ows/proxy/test_emu'
+        super(WpsAppTest, self).setUp()
+        self.init_database()
+
+        service_store = ServiceStore(
+            dummy_request(dbsession=self.session))
+        service_store.save_service(Service(name='wps', url=WPS_TEST_SERVICE))
+
+        self.config.include('twitcher.rpcinterface')
+        self.config.include('twitcher.owsproxy')
+        self.config.include('twitcher.tweens')
+        self.app = webtest.TestApp(self.config.make_wsgi_app())
+        self.wps_path = '/ows/proxy/wps'
         # register
-        service = {'url': WPS_TEST_SERVICE, 'name': 'test_emu',
+        service = {'url': WPS_TEST_SERVICE, 'name': 'wps',
                    'type': 'wps', 'public': True, 'purl': 'http://purl/wps'}
         try:
             call_FUT(self.app, 'register_service', (
@@ -36,9 +40,6 @@ class WpsAppTest(unittest.TestCase):
                 False))
         except Exception:
             pass
-
-    def tearDown(self):
-        pyramid.testing.tearDown()
 
     @pytest.mark.online
     def test_getcaps(self):
