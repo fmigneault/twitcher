@@ -3,7 +3,7 @@ Based on unitests in https://github.com/wndhydrnt/python-oauth2/tree/master/oaut
 """
 
 import pytest
-from .. common import DBTest, dummy_request
+from .common import DBTest, dummy_request
 
 from twitcher.utils import expires_at
 from twitcher.store import tokenstore_factory, servicestore_factory
