@@ -5,7 +5,7 @@ import pytest
 
 from .common import BaseTest, dummy_request
 
-from twitcher.store import tokenstore_factory, servicestore_factory
+from twitcher.store import AccessTokenStore, ServiceStore
 from twitcher.api import TokenManager, Registry
 from twitcher.tokengenerator import UuidTokenGenerator
 
@@ -16,7 +16,7 @@ class TokenManagerTest(BaseTest):
         super(TokenManagerTest, self).setUp()
         self.init_database()
 
-        token_store = tokenstore_factory(
+        token_store = AccessTokenStore(
             dummy_request(dbsession=self.session))
         self.tokenmgr = TokenManager(
             tokengenerator=UuidTokenGenerator(),
@@ -52,7 +52,7 @@ class RegistryTest(BaseTest):
         super(RegistryTest, self).setUp()
         self.init_database()
 
-        service_store = servicestore_factory(
+        service_store = ServiceStore(
             dummy_request(dbsession=self.session))
 
         self.reg = Registry(servicestore=service_store)

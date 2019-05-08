@@ -6,16 +6,16 @@ import pytest
 from .common import BaseTest, dummy_request
 
 from twitcher.utils import expires_at
-from twitcher.store import tokenstore_factory, servicestore_factory
+from twitcher.store import AccessTokenStore, ServiceStore
 from twitcher.models import AccessToken, Service
 
 
-class SQLDBTokenStoreTestCase(BaseTest):
+class AccessTokenStoreTestCase(BaseTest):
     def setUp(self):
-        super(SQLDBTokenStoreTestCase, self).setUp()
+        super(AccessTokenStoreTestCase, self).setUp()
         self.init_database()
 
-        self.token_store = tokenstore_factory(
+        self.token_store = AccessTokenStore(
             dummy_request(dbsession=self.session))
 
     def test_fetch_by_token(self):
@@ -26,12 +26,12 @@ class SQLDBTokenStoreTestCase(BaseTest):
             AccessToken(token="abc", expires_at=expires_at(hours=1)))
 
 
-class SQLDBServiceStoreTestCase(BaseTest):
+class ServiceStoreTestCase(BaseTest):
     def setUp(self):
-        super(SQLDBServiceStoreTestCase, self).setUp()
+        super(ServiceStoreTestCase, self).setUp()
         self.init_database()
 
-        self.service_store = servicestore_factory(
+        self.service_store = ServiceStore(
             dummy_request(dbsession=self.session))
 
     def test_fetch_by_name(self):

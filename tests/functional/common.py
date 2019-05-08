@@ -1,8 +1,7 @@
 from pyramid import testing
 
 from twitcher.tokengenerator import tokengenerator_factory
-from twitcher.store import tokenstore_factory
-from twitcher.store import servicestore_factory
+from twitcher.store import AccessTokenStore, ServiceStore
 
 import xmlrpc.client as xmlrpclib
 
@@ -16,7 +15,7 @@ def setup_with_mongodb():
 
 
 def setup_mongodb_tokenstore(config):
-    store = tokenstore_factory(config.registry)
+    store = AccessTokenStore(config.registry)
     generator = tokengenerator_factory(config.registry)
     store.clear_tokens()
     access_token = generator.create_access_token()
@@ -25,7 +24,7 @@ def setup_mongodb_tokenstore(config):
 
 
 def setup_mongodb_servicestore(config):
-    store = servicestore_factory(config.registry)
+    store = ServiceStore(config.registry)
     store.clear_services()
 
 

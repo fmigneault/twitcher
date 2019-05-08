@@ -5,7 +5,7 @@ from pyramid.testing import Registry
 
 from .common import BaseTest, dummy_request
 
-from twitcher.store import tokenstore_factory, servicestore_factory
+from twitcher.store import AccessTokenStore, ServiceStore
 from twitcher.datatype import Service
 from twitcher.utils import expires_at
 from twitcher.owssecurity import OWSSecurity
@@ -18,8 +18,8 @@ class OWSSecurityTestCase(BaseTest):
         self.init_database()
 
         request = dummy_request(dbsession=self.session)
-        token_store = tokenstore_factory(request)
-        service_store = servicestore_factory(request)
+        token_store = AccessTokenStore(request)
+        service_store = ServiceStore(request)
 
         self.security = OWSSecurity(tokenstore=token_store, servicestore=service_store)
 

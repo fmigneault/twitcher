@@ -2,11 +2,11 @@
 Read or write data from database.
 """
 
-from .exceptions import AccessTokenNotFound, ServiceNotFound
-import .namesgenerator
-from .utils import baseurl
-import .datatype
-import .models
+from twitcher.exceptions import AccessTokenNotFound, ServiceNotFound
+from twitcher import namesgenerator
+from twitcher.utils import baseurl
+from twitcher import datatype
+from twitcher import models
 
 
 class AccessTokenStore(object):
