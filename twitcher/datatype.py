@@ -1,5 +1,5 @@
 """
-Definitions of types used by tokens.
+Definition of service and token types.
 """
 
 import time
@@ -77,6 +77,18 @@ class Service(dict):
             'auth': self.auth,
             'verify': self.verify}
 
+    @classmethod
+    def from_model(cls, model):
+        instance = cls(
+            url=model.url,
+            name=model.name,
+            type=model.type,
+            purl=model.purl,
+            public=model.public,
+            auth=model.auth,
+            verify=model.verify)
+        return instance
+
     def __str__(self):
         return self.name
 
@@ -138,6 +150,13 @@ class AccessToken(dict):
     @property
     def params(self):
         return {'access_token': self.token, 'expires_at': self.expires_at}
+
+    @classmethod
+    def from_model(cls, model):
+        instance = cls(
+            token=model.token,
+            expires_at=model.expires_at)
+        return instance
 
     def __str__(self):
         return self.token

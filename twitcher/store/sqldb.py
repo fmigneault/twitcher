@@ -33,7 +33,7 @@ class SQLDBTokenStore(AccessTokenStore):
     def fetch_by_token(self, token):
         query = self.request.dbsession.query(models.AccessToken)
         one = query.filter(models.AccessToken.token == token).first()
-        return datatype.AccessToken(dict(token=one.token, expires_at=one.expires_at))
+        return datatype.AccessToken.from_model(one)
 
     def clear_tokens(self):
         pass
@@ -52,8 +52,8 @@ class SQLDBServiceStore(ServiceStore):
             url=baseurl(service.url),
             type=service.type,
             purl=service.purl,
-            # public=service.public,
-            # verify=service.verify
+            public=service.public,
+            verify=service.verify,
             auth=service.auth))
         return True
 
@@ -67,26 +67,12 @@ class SQLDBServiceStore(ServiceStore):
     def fetch_by_name(self, name):
         query = self.request.dbsession.query(models.Service)
         one = query.filter(models.Service.name == name).first()
-        return datatype.Service(dict(
-            name=one.name,
-            url=one.url,
-            type=one.type,
-            purl=one.purl,
-            public=one.public,
-            verify=one.verify,
-            auth=one.auth))
+        return datatype.Service.from_model(one)
 
     def fetch_by_url(self, url):
         query = self.request.dbsession.query(models.Service)
         one = query.filter(models.Service.url == url).first()
-        return datatype.Service(dict(
-            name=one.name,
-            url=one.url,
-            type=one.type,
-            purl=one.purl,
-            public=one.public,
-            verify=one.verify,
-            auth=one.auth))
+        return datatype.Service.from_model(one)
 
     def clear_services(self):
         return True
