@@ -18,12 +18,13 @@ class AccessTokenStoreTestCase(BaseTest):
         self.token_store = AccessTokenStore(
             dummy_request(dbsession=self.session))
 
-    def test_fetch_by_token(self):
-        pass
-
-    def test_save_token(self):
+    def test_token(self):
         self.token_store.save_token(
             AccessToken(token="abc", expires_at=expires_at(hours=1)))
+        token = self.token_store.fetch_by_token(token='abc')
+        assert token.token == 'abc'
+        self.token_store.delete_token(token='abc')
+        self.token_store.clear_tokens()
 
 
 class ServiceStoreTestCase(BaseTest):

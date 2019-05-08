@@ -23,23 +23,23 @@ class AccessTokenStore(object):
         self.request.dbsession.add(models.AccessToken(
             token=access_token.token,
             expires_at=access_token.expires_at))
-        return True
 
     def delete_token(self, token):
         """
         Deletes an access token from the store using its token string to identify it.
 
-        :param token: A string containing the token.
-        :return: None.
+        :param token: A token string.
         """
-        pass
+        query = self.request.dbsession.query(models.AccessToken)
+        one = query.filter(models.AccessToken.token == token).first()
+        self.request.dbsession.delete(one)
 
     def fetch_by_token(self, token):
         """
         Fetches an access token from the store using its token string to
         identify it.
 
-        :param token: A string containing the token.
+        :param token: A token string.
         :return: An instance of :class:`twitcher.datatype.AccessToken`.
         """
         query = self.request.dbsession.query(models.AccessToken)
@@ -48,9 +48,9 @@ class AccessTokenStore(object):
 
     def clear_tokens(self):
         """
-        Removes all tokens from database.
+        Removes all tokens.
         """
-        pass
+        self.request.dbsession.query(models.AccessToken).delete()
 
 
 class ServiceStore(object):
