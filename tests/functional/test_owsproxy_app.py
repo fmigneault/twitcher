@@ -28,6 +28,17 @@ class OWSProxyAppTest(FunctionalTest):
         assert resp.content_type == 'text/xml'
         resp.mustcontain('</wps:ProcessDescriptions>')
 
+    @pytest.mark.skip(reason="fix token access")
+    @pytest.mark.online
+    def test_execute_allowed(self):
+        url = "/ows/proxy/wps?service=wps&request=execute&version=1.0.0&identifier=hello&datainputs=name=tux&access_token=ce141debe0fb4ec2836567c38e8b4592"  # noqa
+        resp = self.app.get(url)
+        assert resp.status_code == 200
+        assert resp.content_type == 'text/xml'
+        print(resp.body)
+        resp.mustcontain(
+            '<wps:ProcessSucceeded>PyWPS Process Say Hello finished</wps:ProcessSucceeded>')
+
     @pytest.mark.skip(reason="fix access forbidden")
     @pytest.mark.online
     def test_execute_not_allowed(self):
