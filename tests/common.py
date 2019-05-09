@@ -22,9 +22,10 @@ def dummy_request(dbsession):
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={
-            'sqlalchemy.url': 'sqlite:///:memory:'
-        })
+        self.config = testing.setUp(
+            settings={
+                'sqlalchemy.url': 'sqlite:///:memory:'
+            })
         self.config.include('twitcher.models')
         settings = self.config.get_settings()
 
