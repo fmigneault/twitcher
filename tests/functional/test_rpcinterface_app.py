@@ -15,6 +15,7 @@ class XMLRPCInterfaceAppTest(FunctionalTest):
 
         self.app = webtest.TestApp(self.config.make_wsgi_app())
 
+    @pytest.mark.skip(reason="fix db init")
     def test_generate_token_and_revoke_it(self):
         # gentoken
         resp = call_FUT(self.app, 'generate_token', (1, {}))
@@ -28,7 +29,6 @@ class XMLRPCInterfaceAppTest(FunctionalTest):
         assert resp is True
 
     @pytest.mark.skip(reason="fix rpc call")
-    @pytest.mark.online
     def test_register_service_and_unregister_it(self):
         service = {'url': WPS_TEST_SERVICE, 'name': 'test_wps',
                    'type': 'wps', 'public': False, 'auth': 'token',
