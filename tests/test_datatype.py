@@ -68,5 +68,11 @@ class ServiceTestCase(unittest.TestCase):
 
     def test_service_from_model(self):
         service = Service.from_model(
-            models.Service(name='wps', url='http://nowhere/wps'))
-        assert service.name == 'wps'
+            models.Service(name='test_wps', url='http://nowhere/wps'))
+        assert service.name == 'test_wps'
+        assert service.url == 'http://nowhere/wps'
+        assert service.type == 'WPS'
+        assert service.auth == 'token'
+        assert service.public is False
+        assert service.verify is True
+        assert service.purl == ''

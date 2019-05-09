@@ -33,12 +33,12 @@ class Service(dict):
     @property
     def type(self):
         """Service type."""
-        return self.get('type', 'WPS')
+        return self.get('type') or 'WPS'
 
     @property
     def purl(self):
         """Service optional public URL (purl)."""
-        return self.get('purl', '')
+        return self.get('purl') or ''
 
     def has_purl(self):
         """Return true if we have a valid public URL (purl)."""
@@ -48,17 +48,17 @@ class Service(dict):
     def public(self):
         """Flag if service has public access."""
         # TODO: public access can be set via auth parameter.
-        return self.get('public', False)
+        return self.get('public') or False
 
     @property
     def auth(self):
         """Authentication method: public, token, cert."""
-        return self.get('auth', 'token')
+        return self.get('auth') or 'token'
 
     @property
     def verify(self):
         """Verify ssl service certificate."""
-        return self.get('verify', True)
+        return self.get('verify') or True
 
     @property
     def params(self):
