@@ -2,16 +2,24 @@
 Read or write data from database.
 """
 
-from twitcher.exceptions import AccessTokenNotFound, ServiceNotFound
+from twitcher.exceptions import (
+    AccessTokenNotFound,
+    ServiceNotFound,
+    DatabaseError
+)
 from twitcher import namesgenerator
 from twitcher.utils import baseurl
 from twitcher import datatype
 from twitcher import models
 
+from sqlalchemy.exc import DBAPIError
+
 
 class AccessTokenStore(object):
     """
     Stores tokens in sql database.
+
+    TODO: handle exceptions.
     """
     def __init__(self, request):
         self.request = request
@@ -20,9 +28,12 @@ class AccessTokenStore(object):
         """
         Stores an access token.
         """
-        self.request.dbsession.add(models.AccessToken(
-            token=access_token.token,
-            expires_at=access_token.expires_at))
+        try:
+            self.request.dbsession.add(models.AccessToken(
+                token=access_token.token,
+                expires_at=access_token.expires_at))
+        except DBAPIError:
+            raise DatabaseError
 
     def delete_token(self, token):
         """
@@ -30,8 +41,11 @@ class AccessTokenStore(object):
 
         :param token: A token string.
         """
-        query = self.request.dbsession.query(models.AccessToken)
-        one = query.filter(models.AccessToken.token == token).first()
+        try:
+            query = self.request.dbsession.query(models.AccessToken)
+            one = query.filter(models.AccessToken.token == token).first()
+        except DBAPIError:
+            raise DatabaseError
         if not one:
             raise AccessTokenNotFound
         self.request.dbsession.delete(one)
@@ -44,8 +58,11 @@ class AccessTokenStore(object):
         :param token: A token string.
         :return: An instance of :class:`twitcher.datatype.AccessToken`.
         """
-        query = self.request.dbsession.query(models.AccessToken)
-        one = query.filter(models.AccessToken.token == token).first()
+        try:
+            query = self.request.dbsession.query(models.AccessToken)
+            one = query.filter(models.AccessToken.token == token).first()
+        except DBAPIError:
+            raise DatabaseError
         if not one:
             raise AccessTokenNotFound
         return datatype.AccessToken.from_model(one)
@@ -54,7 +71,10 @@ class AccessTokenStore(object):
         """
         Removes all tokens.
         """
-        self.request.dbsession.query(models.AccessToken).delete()
+        try:
+            self.request.dbsession.query(models.AccessToken).delete()
+        except DBAPIError:
+            raise DatabaseError
 
 
 class ServiceStore(object):
@@ -70,21 +90,27 @@ class ServiceStore(object):
 
         :param service: An instance of :class:`twitcher.datatype.Service`.
         """
-        self.request.dbsession.add(models.Service(
-            name=service.name,
-            url=baseurl(service.url),
-            type=service.type,
-            purl=service.purl,
-            public=service.public,
-            verify=service.verify,
-            auth=service.auth))
+        try:
+            self.request.dbsession.add(models.Service(
+                name=service.name,
+                url=baseurl(service.url),
+                type=service.type,
+                purl=service.purl,
+                public=service.public,
+                verify=service.verify,
+                auth=service.auth))
+        except DBAPIError:
+            raise DatabaseError
 
     def delete_service(self, name):
         """
         Removes service identified by name.
         """
-        query = self.request.dbsession.query(models.Service)
-        one = query.filter(models.Service.name == name).first()
+        try:
+            query = self.request.dbsession.query(models.Service)
+            one = query.filter(models.Service.name == name).first()
+        except DBAPIError:
+            raise DatabaseError
         if not one:
             raise ServiceNotFound
         self.request.dbsession.delete(one)
@@ -95,7 +121,10 @@ class ServiceStore(object):
 
         :return: A list with instances of :class:`twitcher.datatype.Service`.
         """
-        services = self.request.dbsession.query(models.Service).all()
+        try:
+            services = self.request.dbsession.query(models.Service).all()
+        except DBAPIError:
+            raise DatabaseError
         return [datatype.Service.from_model(service) for service in services]
 
     def fetch_by_name(self, name):
@@ -105,8 +134,11 @@ class ServiceStore(object):
         :param name: A service name string.
         :return: An instance of :class:`twitcher.datatype.Service`.
         """
-        query = self.request.dbsession.query(models.Service)
-        one = query.filter(models.Service.name == name).first()
+        try:
+            query = self.request.dbsession.query(models.Service)
+            one = query.filter(models.Service.name == name).first()
+        except DBAPIError:
+            raise DatabaseError
         if not one:
             raise ServiceNotFound
         return datatype.Service.from_model(one)
@@ -118,8 +150,11 @@ class ServiceStore(object):
         :param url: A URL string.
         :return: An instance of :class:`twitcher.datatype.Service`.
         """
-        query = self.request.dbsession.query(models.Service)
-        one = query.filter(models.Service.url == url).first()
+        try:
+            query = self.request.dbsession.query(models.Service)
+            one = query.filter(models.Service.url == url).first()
+        except DBAPIError:
+            raise DatabaseError
         if not one:
             raise ServiceNotFound
         return datatype.Service.from_model(one)
@@ -128,4 +163,7 @@ class ServiceStore(object):
         """
         Removes all services.
         """
-        self.request.dbsession.query(models.Service).delete()
+        try:
+            self.request.dbsession.query(models.Service).delete()
+        except DBAPIError:
+            raise DatabaseError
