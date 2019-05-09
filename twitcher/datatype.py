@@ -10,10 +10,13 @@ from twitcher.exceptions import AccessTokenNotFound
 
 class Service(dict):
     """
-    Dictionary that contains OWS services. It always has the ``'url'`` key.
+    Dictionary that contains OWS services.
+    It always has the ``'url'`` and ``'name'`` key.
     """
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
+        if 'name' not in self:
+            raise TypeError("'name' is required")
         if 'url' not in self:
             raise TypeError("'url' is required")
 
@@ -25,7 +28,7 @@ class Service(dict):
     @property
     def name(self):
         """Service name."""
-        return self.get('name', 'unknown')
+        return self['name']
 
     @property
     def type(self):

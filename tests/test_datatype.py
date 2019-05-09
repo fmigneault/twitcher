@@ -38,14 +38,16 @@ class AccessTokenTestCase(unittest.TestCase):
 
 class ServiceTestCase(unittest.TestCase):
     def test_service_with_url_only(self):
-        service = Service(url='http://nowhere/wps')
+        service = Service(name="test_wps", url='http://nowhere/wps')
         assert service.url == 'http://nowhere/wps'
-        assert service.name == 'unknown'
+        assert service.name == 'test_wps'
         assert service.has_purl() is False
 
-    def test_missing_url(self):
+    def test_missing_url_or_name(self):
         with pytest.raises(TypeError):
-            Service()
+            Service(name="test")
+        with pytest.raises(TypeError):
+            Service(url='http://nowhere/wps')
 
     def test_service_with_name(self):
         service = Service(url='http://nowhere/wps', name="test_wps")
