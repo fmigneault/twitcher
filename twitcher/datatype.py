@@ -12,6 +12,8 @@ class Service(dict):
     """
     Dictionary that contains OWS services.
     It always has the ``'url'`` and ``'name'`` key.
+
+    TODO: Should this be part of the model?
     """
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
@@ -95,6 +97,8 @@ class Service(dict):
 class AccessToken(dict):
     """
     Dictionary that contains access token. It always has ``'token'`` key.
+
+    TODO: Should this be part of the model?
     """
 
     def __init__(self, *args, **kwargs):
