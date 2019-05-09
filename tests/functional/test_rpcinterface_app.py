@@ -3,24 +3,14 @@ Testing the Twitcher XML-RPC interface.
 """
 import pytest
 import webtest
-import unittest
 
-from pyramid import testing
-
-from .. common import BaseTest, dummy_request, call_FUT, WPS_TEST_SERVICE
+from .. common import FunctionalTest, call_FUT, WPS_TEST_SERVICE
 
 
-class XMLRPCInterfaceAppTest(unittest.TestCase):
-    """
-    TODO: use sqlite memory db.
-    """
+class XMLRPCInterfaceAppTest(FunctionalTest):
 
     def setUp(self):
-        self.config = testing.setUp(
-            settings={
-                'sqlalchemy.url': 'sqlite:////Users/pingu/Documents/GitHub/birdhouse/twitcher/twitcher.sqlite'
-            })
-        self.config.include('twitcher.models')
+        super(XMLRPCInterfaceAppTest, self).setUp()
         self.config.include('twitcher.rpcinterface')
 
         self.app = webtest.TestApp(self.config.make_wsgi_app())

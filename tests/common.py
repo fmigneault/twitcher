@@ -52,6 +52,19 @@ class BaseTest(unittest.TestCase):
         Base.metadata.drop_all(self.engine)
 
 
+class FunctionalTest(unittest.TestCase):
+    """
+    TODO: use sqlite memory db.
+    """
+
+    def setUp(self):
+        self.config = testing.setUp(
+            settings={
+                'sqlalchemy.url': 'sqlite:////Users/pingu/Documents/GitHub/birdhouse/twitcher/twitcher.sqlite'
+            })
+        self.config.include('twitcher.models')
+
+
 def call_FUT(app, method, params):
     xml = xmlrpclib.dumps(params, methodname=method).encode('utf-8')
     print(xml)
