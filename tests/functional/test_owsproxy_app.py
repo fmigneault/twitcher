@@ -3,19 +3,12 @@ import webtest
 
 from .. common import BaseTest, dummy_request, WPS_TEST_SERVICE
 
-from twitcher.store import ServiceStore
-from twitcher.datatype import Service
-
 
 class OWSProxyAppTest(BaseTest):
 
     def setUp(self):
         super(OWSProxyAppTest, self).setUp()
         self.init_database()
-
-        service_store = ServiceStore(
-            dummy_request(dbsession=self.session))
-        service_store.save_service(Service(name='wps', url=WPS_TEST_SERVICE))
 
         self.config.include('twitcher.owsproxy')
         self.config.include('twitcher.tweens')
