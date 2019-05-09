@@ -38,11 +38,11 @@ class RPCInterface(ITokenManager, IRegistry):
         """
         return self.tokenmgr.revoke_all_tokens()
 
-    def register_service(self, url, data=None, overwrite=True):
+    def register_service(self, name, url, data=None):
         """
         Implementation of :meth:`twitcher.api.IRegistry.register_service`.
         """
-        return self.srvreg.register_service(url, data, overwrite)
+        return self.srvreg.register_service(name, url, data)
 
     def unregister_service(self, name):
         """

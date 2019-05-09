@@ -32,11 +32,11 @@ class ITokenManager(object):
 
 
 class IRegistry(object):
-    def register_service(self, url, data, overwrite):
+    def register_service(self, name, url, data):
         """
-        Adds an OWS service with the given ``url`` to the service store.
+        Adds an OWS service with the given ``name`` and ``url`` to the service store.
 
-        :param data: a dict with additional information like ``name``.
+        :param data: a dict with additional information like ``purl``.
         """
         raise NotImplementedError
 
@@ -124,16 +124,17 @@ class Registry(IRegistry):
     def __init__(self, servicestore):
         self.store = servicestore
 
-    def register_service(self, url, data=None, overwrite=True):
+    def register_service(self, name, url, data=None):
         """
         Implementation of :meth:`twitcher.api.IRegistry.register_service`.
         """
         data = data or {}
 
         args = dict(data)
+        args['name'] = name
         args['url'] = url
         service = datatype.Service(**args)
-        self.store.save_service(service, overwrite=overwrite)
+        self.store.save_service(service)
         return service.params
 
     def unregister_service(self, name):

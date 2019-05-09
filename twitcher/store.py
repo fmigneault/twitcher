@@ -79,19 +79,19 @@ class AccessTokenStore(object):
 
 class ServiceStore(object):
     """
-    Stores OWS services.
+    Stores a services. It inserts or updates the service with a given name.
     """
     def __init__(self, request):
         self.request = request
 
-    def save_service(self, service, overwrite=True):
+    def save_service(self, service):
         """
         Stores an OWS service in database.
 
         :param service: An instance of :class:`twitcher.datatype.Service`.
         """
         try:
-            self.request.dbsession.add(models.Service(
+            self.request.dbsession.merge(models.Service(
                 name=service.name,
                 url=baseurl(service.url),
                 type=service.type,

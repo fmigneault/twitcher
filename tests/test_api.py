@@ -53,9 +53,9 @@ class RegistryTest(BaseTest):
                    'purl': 'http://myservice/wps'}
         # register
         resp = self.reg.register_service(
+            service['name'],
             service['url'],
-            service,
-            False)
+            service)
         assert resp == service
 
         # get by name

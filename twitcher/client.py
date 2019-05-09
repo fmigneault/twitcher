@@ -76,9 +76,9 @@ class TwitcherService(object):
     # service registry
 
     @xmlrpc_error_handler
-    def register_service(self, url, data=None, overwrite=True):
+    def register_service(self, name, url, data=None):
         data = data or {}
-        return self.server.register_service(url, data, overwrite)
+        return self.server.register_service(name, url, data)
 
     @xmlrpc_error_handler
     def unregister_service(self, name):
