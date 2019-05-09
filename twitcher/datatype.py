@@ -109,7 +109,7 @@ class AccessToken(dict):
 
     @property
     def expires_at(self):
-        return int(self.get("expires_at", 0))
+        return int(self.get("expires_at") or 0)
 
     @property
     def expires_in(self):

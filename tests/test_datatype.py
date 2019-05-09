@@ -34,6 +34,7 @@ class AccessTokenTestCase(unittest.TestCase):
         access_token = AccessToken.from_model(
             models.AccessToken(token='abc', expires_at=expires_at(hours=2)))
         assert access_token.token == 'abc'
+        assert access_token.expires_at > 0
 
 
 class ServiceTestCase(unittest.TestCase):
