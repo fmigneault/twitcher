@@ -32,6 +32,8 @@ class AccessTokenStore(object):
         """
         query = self.request.dbsession.query(models.AccessToken)
         one = query.filter(models.AccessToken.token == token).first()
+        if not one:
+            raise AccessTokenNotFound
         self.request.dbsession.delete(one)
 
     def fetch_by_token(self, token):
@@ -44,6 +46,8 @@ class AccessTokenStore(object):
         """
         query = self.request.dbsession.query(models.AccessToken)
         one = query.filter(models.AccessToken.token == token).first()
+        if not one:
+            raise AccessTokenNotFound
         return datatype.AccessToken.from_model(one)
 
     def clear_tokens(self):
@@ -81,6 +85,8 @@ class ServiceStore(object):
         """
         query = self.request.dbsession.query(models.Service)
         one = query.filter(models.Service.name == name).first()
+        if not one:
+            raise ServiceNotFound
         self.request.dbsession.delete(one)
 
     def list_services(self):
@@ -101,6 +107,8 @@ class ServiceStore(object):
         """
         query = self.request.dbsession.query(models.Service)
         one = query.filter(models.Service.name == name).first()
+        if not one:
+            raise ServiceNotFound
         return datatype.Service.from_model(one)
 
     def fetch_by_url(self, url):
@@ -112,6 +120,8 @@ class ServiceStore(object):
         """
         query = self.request.dbsession.query(models.Service)
         one = query.filter(models.Service.url == url).first()
+        if not one:
+            raise ServiceNotFound
         return datatype.Service.from_model(one)
 
     def clear_services(self):
