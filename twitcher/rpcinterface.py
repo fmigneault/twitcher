@@ -20,11 +20,11 @@ class RPCInterface(ITokenManager, IRegistry):
             AccessTokenStore(request))
         self.srvreg = Registry(ServiceStore(request))
 
-    def generate_token(self, valid_in_hours=1, environ=None):
+    def generate_token(self, valid_in_hours=1):
         """
         Implementation of :meth:`twitcher.api.ITokenManager.generate_token`.
         """
-        return self.tokenmgr.generate_token(valid_in_hours, environ)
+        return self.tokenmgr.generate_token(valid_in_hours)
 
     def revoke_token(self, token):
         """

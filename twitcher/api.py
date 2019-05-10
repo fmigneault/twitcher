@@ -5,16 +5,13 @@ LOGGER = logging.getLogger("TWITCHER")
 
 
 class ITokenManager(object):
-    def generate_token(self, valid_in_hours=1, data=None):
+    def generate_token(self, valid_in_hours):
         """
         Generates an access token which is valid for ``valid_in_hours``.
 
         Arguments:
 
         * :param valid_in_hours: an int with number of hours the token is valid.
-        * :param data: a dict with extra data used with this token.
-
-        Possible keys: ``esgf_access_token``, ``esgf_slcs_service_url`` or ``esgf_credentials``.
         """
         raise NotImplementedError
 
@@ -80,17 +77,20 @@ class TokenManager(ITokenManager):
         self.tokengenerator = tokengenerator
         self.store = tokenstore
 
-    def generate_token(self, valid_in_hours=1, data=None):
+    def generate_token(self, valid_in_hours=1):
         """
         Implementation of :meth:`twitcher.api.ITokenManager.generate_token`.
         """
-        data = data or {}
         access_token = self.tokengenerator.create_access_token(
-            valid_in_hours=valid_in_hours,
-            data=data,
+            valid_in_hours=valid_in_hours
         )
-        self.store.save_token(access_token)
-        return access_token.params
+        try:
+            self.store.save_token(access_token)
+        except Exception:
+            LOGGER.exception('Failed to save token.')
+            return {}
+        else:
+            return access_token.params
 
     def revoke_token(self, token):
         """
@@ -134,7 +134,11 @@ class Registry(IRegistry):
         args['name'] = name
         args['url'] = url
         service = datatype.Service(**args)
-        self.store.save_service(service)
+        try:
+            self.store.save_service(service)
+        except Exception:
+            LOGGER.exception('register service failed')
+            return {}
         return service.params
 
     def unregister_service(self, name):
@@ -144,7 +148,7 @@ class Registry(IRegistry):
         try:
             self.store.delete_service(name=name)
         except Exception:
-            LOGGER.exception('unregister failed')
+            LOGGER.exception('unregister service failed')
             return False
         else:
             return True
@@ -156,7 +160,7 @@ class Registry(IRegistry):
         try:
             service = self.store.fetch_by_name(name=name)
         except Exception:
-            LOGGER.error('Could not get service with name %s', name)
+            LOGGER.error('Could not get service with name {}'.format(name))
             return {}
         else:
             return service.params
@@ -168,7 +172,7 @@ class Registry(IRegistry):
         try:
             service = self.store.fetch_by_url(url=url)
         except Exception:
-            LOGGER.error('Could not get service with url %s', url)
+            LOGGER.error('Could not get service with url {}'.format(url))
             return {}
         else:
             return service.params

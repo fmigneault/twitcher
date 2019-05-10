@@ -61,9 +61,8 @@ class TwitcherService(object):
     # tokens
 
     @xmlrpc_error_handler
-    def generate_token(self, valid_in_hours=1, data=None):
-        data = data or {}
-        return self.server.generate_token(valid_in_hours, data)
+    def generate_token(self, valid_in_hours=1):
+        return self.server.generate_token(valid_in_hours)
 
     @xmlrpc_error_handler
     def revoke_token(self, token):
