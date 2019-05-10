@@ -1,14 +1,15 @@
 import pytest
 import unittest
-import mock
 
 from pyramid import testing
 from pyramid.testing import DummyRequest
 
 from twitcher.owsrequest import OWSRequest
 from twitcher.owsexceptions import OWSInvalidParameterValue, OWSMissingParameterValue
+from tests.utils import ignore_wps_warnings
 
 
+@ignore_wps_warnings
 class OWSRequestWpsTestCase(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()

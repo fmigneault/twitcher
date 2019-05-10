@@ -10,16 +10,13 @@ This module uses code from esgf-slcs-client-example_ and esgf-pyclient_.
 .. _OpenDAP: http://docs.opendap.org/index.php/Wiki_Testing/OPeNDAPUserGuideA
 
 """
-
-import os
-import shutil
-from OpenSSL import crypto
-import base64
-import requests
-from requests_oauthlib import OAuth2Session
-
 from twitcher.utils import is_valid_url
-
+from requests_oauthlib import OAuth2Session
+from OpenSSL import crypto
+import os
+import base64
+import shutil
+import requests
 import logging
 logger = logging.getLogger(__name__)
 
@@ -79,7 +76,7 @@ class ESGFAccessManager(object):
         try:
             os.chmod(self.esgf_credentials, 0o400)
         except Exception:
-            logger.warn("Could not update permission of credentials.")
+            logger.warning("Could not update permission of credentials.")
         return True
 
     def _download_certificate(self, url):

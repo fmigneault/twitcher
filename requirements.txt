@@ -4,9 +4,14 @@ pyramid>=1.10
 pyramid_rpc
 pyramid_debugtoolbar
 pyramid_retry
+pyramid_mako
 webob
 requests
 requests_oauthlib
 pymongo
 argcomplete
 pytz
+lxml
+colander
+cornice
+cornice_swagger>=0.7.0

@@ -1,22 +1,15 @@
-import tempfile
-
+from twitcher.store.base import AccessTokenStore, ServiceStore
 from twitcher.exceptions import AccessTokenNotFound
 from twitcher.exceptions import ServiceNotFound
 from twitcher.owsexceptions import OWSAccessForbidden, OWSInvalidParameterValue
 from twitcher.utils import path_elements
-from twitcher.store import tokenstore_factory
-from twitcher.store import servicestore_factory
 from twitcher.utils import parse_service_name
 from twitcher.owsrequest import OWSRequest
 from twitcher.esgf import fetch_certificate, ESGF_CREDENTIALS
 from twitcher.datatype import Service
-
+import tempfile
 import logging
 LOGGER = logging.getLogger("TWITCHER")
-
-
-def owssecurity_factory(registry):
-    return OWSSecurity(tokenstore_factory(registry), servicestore_factory(registry))
 
 
 def verify_cert(request):
@@ -24,13 +17,13 @@ def verify_cert(request):
         raise OWSAccessForbidden("A valid X.509 client certificate is needed.")
 
 
-class OWSSecurity(object):
+class OWSSecurityInterface(object):
 
-    def __init__(self, tokenstore, servicestore):
-        self.tokenstore = tokenstore
-        self.servicestore = servicestore
+    def check_request(self, request):
+        raise NotImplementedError
 
-    def get_token_param(self, request):
+    @staticmethod
+    def get_token_param(request):
         token = None
         if 'token' in request.params:
             token = request.params['token']   # in params
@@ -44,7 +37,8 @@ class OWSSecurity(object):
                 token = elements[-1]   # last path element
         return token
 
-    def prepare_headers(self, request, access_token):
+    @staticmethod
+    def prepare_headers(request, access_token):
         if "esgf_access_token" in access_token.data or "esgf_credentials" in access_token.data:
             workdir = tempfile.mkdtemp(prefix=request.prefix, dir=request.workdir)
             if fetch_certificate(workdir=workdir, data=access_token.data):
@@ -52,6 +46,15 @@ class OWSSecurity(object):
                 request.headers['X-X509-User-Proxy'] = workdir + '/' + ESGF_CREDENTIALS
                 LOGGER.debug("Prepared request headers.")
         return request
+
+
+class OWSSecurity(OWSSecurityInterface):
+
+    def __init__(self, tokenstore, servicestore):
+        # type: (AccessTokenStore, ServiceStore) -> None
+        super(OWSSecurity, self).__init__()
+        self.tokenstore = tokenstore
+        self.servicestore = servicestore
 
     def verify_access(self, request, service):
         # TODO: public service access handling is confusing.
@@ -73,24 +76,24 @@ class OWSSecurity(object):
                 raise OWSAccessForbidden("Access token is expired.")
             # update request with data from access token
             # request.environ.update(access_token.data)
-            # TODO: is this realy the way we want to do this?
+            # TODO: is this really the way we want to do this?
             request = self.prepare_headers(request, access_token)
         except AccessTokenNotFound:
             raise OWSAccessForbidden("Access token is required to access this service.")
 
     def check_request(self, request):
-        protected_path = request.registry.settings.get('twitcher.ows_proxy_protected_path ', '/ows')
+        protected_path = request.registry.settings.get('twitcher.ows_proxy_protected_path', '/ows')
         if request.path.startswith(protected_path):
             # TODO: refactor this code
             try:
                 service_name = parse_service_name(request.path, protected_path)
-                service = self.servicestore.fetch_by_name(service_name)
+                service = self.servicestore.fetch_by_name(service_name, request=request)
                 if service.public is True:
                     LOGGER.warn('public access for service %s', service_name)
             except ServiceNotFound:
                 # TODO: why not raising an exception?
-                service = Service(url='unregistered', public=False, auth='token')
-                LOGGER.warn("Service not registered.")
+                service = Service(url='unregistered', name='unregistered', public=False, auth='token')
+                LOGGER.warning("Service not registered.")
             ows_request = OWSRequest(request)
             if not ows_request.service_allowed():
                 raise OWSInvalidParameterValue(

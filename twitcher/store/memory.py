@@ -25,21 +25,21 @@ class MemoryTokenStore(AccessTokenStore):
     def __init__(self):
         self.access_tokens = {}
 
-    def save_token(self, access_token):
+    def save_token(self, access_token, request=None):
         self.access_tokens[access_token.token] = access_token
         return True
 
-    def delete_token(self, token):
+    def delete_token(self, token, request=None):
         if token in self.access_tokens:
             del self.access_tokens[token]
 
-    def fetch_by_token(self, token):
+    def fetch_by_token(self, token, request=None):
         if token not in self.access_tokens:
             raise AccessTokenNotFound
 
         return self.access_tokens[token]
 
-    def clear_tokens(self):
+    def clear_tokens(self, request=None):
         self.access_tokens = {}
 
 
@@ -57,7 +57,7 @@ class MemoryServiceStore(ServiceStore):
     def _insert(self, service):
         self.name_index[service['name']] = service
 
-    def save_service(self, service, overwrite=True):
+    def save_service(self, service, overwrite=True, request=None):
         """
         Store an OWS service in database.
         """
@@ -82,14 +82,14 @@ class MemoryServiceStore(ServiceStore):
             verify=service.verify))
         return self.fetch_by_name(name=name)
 
-    def delete_service(self, name):
+    def delete_service(self, name, request=None):
         """
         Removes service from registry database.
         """
         self._delete(name=name)
         return True
 
-    def list_services(self):
+    def list_services(self, request=None):
         """
         Lists all services in memory storage.
         """
@@ -98,22 +98,22 @@ class MemoryServiceStore(ServiceStore):
             my_services.append(Service(service))
         return my_services
 
-    def fetch_by_name(self, name):
+    def fetch_by_name(self, name, request=None):
         """
         Get service for given ``name`` from memory storage.
         """
         service = self.name_index.get(name)
         if not service:
-            raise ServiceNotFound
+            raise ServiceNotFound("Service `{}` could not be found.".format(name))
         return Service(service)
 
-    def fetch_by_url(self, url):
+    def fetch_by_url(self, url, request=None):
         for service in list(self.name_index.values()):
             if service.url == url:
                 return Service(service)
         raise ServiceNotFound
 
-    def clear_services(self):
+    def clear_services(self, request=None):
         """
         Removes all OWS services from memory storage.
         """

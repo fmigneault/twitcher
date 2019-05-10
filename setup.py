@@ -6,7 +6,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 about = {}
-with open(os.path.join(here, 'twitcher', '__version__.py'), 'r') as f:
+with open(os.path.join(here, 'twitcher', '__meta__.py'), 'r') as f:
     exec(f.read(), about)
 
 reqs = [line.strip() for line in open('requirements.txt')]
@@ -14,7 +14,7 @@ extra_reqs = [line.strip() for line in open('requirements_dev.txt')]
 
 setup(name='pyramid_twitcher',
       version=about['__version__'],
-      description='Security Proxy for OGC Services like WPS.',
+      description=about['__description__'],
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
           "Programming Language :: Python",
@@ -25,15 +25,18 @@ setup(name='pyramid_twitcher',
       ],
       author=about['__author__'],
       author_email=about['__email__'],
-      url='https://github.com/bird-house/twitcher.git',
+      url=about['__repository__'],
       license='Apache License 2.0',
       keywords='pyramid twitcher birdhouse wps security proxy ows ogc',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
       test_suite='twitcher',
+      python_requires='>=3.7',
       install_requires=reqs,
-      extra_requires=extra_reqs,
+      extra_requires={
+          "dev": extra_reqs,    # pip install -e '.[dev]'
+      },
       entry_points="""\
       [paste.app_factory]
       main = twitcher:main

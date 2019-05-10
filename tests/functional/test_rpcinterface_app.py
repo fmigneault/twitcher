@@ -13,6 +13,7 @@ from .common import setup_mongodb_servicestore
 from .common import WPS_TEST_SERVICE
 
 
+@pytest.mark.functional
 class XMLRPCInterfaceAppTest(unittest.TestCase):
 
     def setUp(self):

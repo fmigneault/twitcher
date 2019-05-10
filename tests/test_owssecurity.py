@@ -1,8 +1,7 @@
 import pytest
 import unittest
-import mock
 
-from pyramid.testing import DummyRequest, testConfig
+from pyramid.testing import DummyRequest
 from pyramid.testing import Registry
 from twitcher.datatype import AccessToken
 from twitcher.datatype import Service
@@ -50,7 +49,7 @@ class OWSSecurityTestCase(unittest.TestCase):
         params = dict(request="Execute", service="WPS", version="1.0.0", token="cdefg")
         request = DummyRequest(params=params, path='/ows/proxy/emu')
         request.registry = Registry()
-        request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
+        request.registry.settings = {'twitcher.ows_proxy_protected_path': '/ows'}
         self.security.check_request(request)
 
     def test_check_request_invalid(self):
@@ -59,7 +58,7 @@ class OWSSecurityTestCase(unittest.TestCase):
         params = dict(request="Execute", service="WPS", version="1.0.0", token="xyz")
         request = DummyRequest(params=params, path='/ows/proxy/emu')
         request.registry = Registry()
-        request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
+        request.registry.settings = {'twitcher.ows_proxy_protected_path': '/ows'}
         with pytest.raises(OWSAccessForbidden):
             security.check_request(request)
 
@@ -69,7 +68,7 @@ class OWSSecurityTestCase(unittest.TestCase):
         params = dict(request="GetCapabilities", service="WPS", version="1.0.0")
         request = DummyRequest(params=params, path='/ows/proxy/emu')
         request.registry = Registry()
-        request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
+        request.registry.settings = {'twitcher.ows_proxy_protected_path': '/ows'}
         security.check_request(request)
 
     def test_check_request_allowed_describeprocess(self):
@@ -78,7 +77,7 @@ class OWSSecurityTestCase(unittest.TestCase):
         params = dict(request="DescribeProcess", service="WPS", version="1.0.0")
         request = DummyRequest(params=params, path='/ows/proxy/emu')
         request.registry = Registry()
-        request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
+        request.registry.settings = {'twitcher.ows_proxy_protected_path': '/ows'}
         security.check_request(request)
 
     def test_check_request_public_access(self):
@@ -90,5 +89,5 @@ class OWSSecurityTestCase(unittest.TestCase):
         params = dict(request="Execute", service="WPS", version="1.0.0", token="cdefg")
         request = DummyRequest(params=params, path='/ows/proxy/emu')
         request.registry = Registry()
-        request.registry.settings = {'twitcher.ows_prox_protected_path': '/ows'}
+        request.registry.settings = {'twitcher.ows_proxy_protected_path': '/ows'}
         security.check_request(request)

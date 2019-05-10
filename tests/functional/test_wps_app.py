@@ -16,6 +16,7 @@ from .common import setup_with_mongodb, setup_mongodb_tokenstore
 from .common import WPS_TEST_SERVICE
 
 
+@pytest.mark.functional
 class WpsAppTest(unittest.TestCase):
 
     def setUp(self):

@@ -7,11 +7,12 @@ from .common import setup_with_mongodb
 from twitcher.store import servicestore_factory
 
 
+@pytest.mark.functional
 class OWSProxyAppTest(unittest.TestCase):
 
     def setUp(self):
         config = setup_with_mongodb()
-        self._setup_registry(config)
+        self.setup_registry(config)
         config.include('twitcher.owsproxy')
         config.include('twitcher.tweens')
         self.app = webtest.TestApp(config.make_wsgi_app())
@@ -19,10 +20,11 @@ class OWSProxyAppTest(unittest.TestCase):
     def tearDown(self):
         testing.tearDown()
 
-    def _setup_registry(self, config):
+    @staticmethod
+    def setup_registry(config):
         registry = servicestore_factory(config.registry)
         registry.clear_services()
-        # TODO: testing against ourselfs ... not so good
+        # TODO: testing against ourselves ... not so good
         url = "https://localhost:5000/ows/wps"
         registry.register_service(url=url, name="twitcher")
 

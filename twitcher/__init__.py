@@ -1,4 +1,3 @@
-from .__version__ import __author__, __email__, __version__
 
 
 def main(global_config, **settings):
@@ -12,11 +11,11 @@ def main(global_config, **settings):
     # include twitcher components
     config.include('twitcher.config')
     config.include('twitcher.frontpage')
+    config.include('twitcher.restapi')
     config.include('twitcher.rpcinterface')
     config.include('twitcher.owsproxy')
 
     # tweens/middleware
-    # TODO: maybe add tween for exception handling or use unknown_failure view
     config.include('twitcher.tweens')
 
     config.scan()

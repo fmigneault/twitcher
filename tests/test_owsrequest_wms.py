@@ -6,6 +6,7 @@ from pyramid.testing import DummyRequest
 
 from twitcher.owsrequest import OWSRequest
 from twitcher.owsexceptions import OWSInvalidParameterValue
+from tests.utils import ignore_wps_warnings
 
 
 class OWSRequestWmsTestCase(unittest.TestCase):
@@ -33,6 +34,7 @@ class OWSRequestWmsTestCase(unittest.TestCase):
         assert ows_req.service == 'wms'
         assert ows_req.version == '1.3.0'
 
+    @ignore_wps_warnings
     def test_get_invalid_request(self):
         params = dict(REQUEST="givememore", SERVICE="WMS", VERSION="1.3.0")
         request = DummyRequest(params=params)

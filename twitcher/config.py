@@ -1,9 +1,5 @@
 import os
 import tempfile
-
-from pyramid.settings import asbool
-
-
 import logging
 LOGGER = logging.getLogger("TWITCHER")
 

@@ -1,10 +1,11 @@
 -r requirements.txt
 # tests
 pytest
+pytest-cov
+coverage
 WebTest
 mock
 flake8
 # docs
 sphinx>=1.7
 # release
-bumpversion

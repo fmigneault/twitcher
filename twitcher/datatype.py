@@ -2,10 +2,8 @@
 Definitions of types used by tokens.
 """
 
-import time
-
 from twitcher.utils import now_secs, is_valid_url
-from twitcher.exceptions import AccessTokenNotFound
+from pyramid.settings import asbool
 
 
 class Service(dict):
@@ -55,16 +53,7 @@ class Service(dict):
     @property
     def verify(self):
         """Verify ssl service certificate."""
-        value = self.get('verify', 'true')
-        if isinstance(value, bool):
-            verify = value
-        elif value.lower() == 'true':
-            verify = True
-        elif value.lower() == 'false':
-            verify = False
-        else:
-            verify = value
-        return verify
+        return asbool(self.get('verify', True))
 
     @property
     def params(self):

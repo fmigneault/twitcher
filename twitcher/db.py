@@ -2,11 +2,24 @@
 # http://docs.pylonsproject.org/projects/pyramid-cookbook/en/latest/database/mongodb.html
 # maybe use event to register mongodb
 
+from twitcher.utils import get_settings
+from typing import TYPE_CHECKING
 import pymongo
+if TYPE_CHECKING:
+    from twitcher.typedefs import AnySettingsContainer
+    from typing import AnyStr
 
 
-def mongodb(registry):
-    settings = registry.settings
+def get_database_type(container):
+    # type: (AnySettingsContainer) -> AnyStr
+    """Obtains the selected database implementation. By default mongodb is used."""
+    settings = get_settings(container)
+    return settings.get('twitcher.database', 'mongodb')
+
+
+def mongodb(container):
+    # type: (AnySettingsContainer) -> pymongo.MongoClient
+    settings = get_settings(container)
     client = pymongo.MongoClient(settings['mongodb.host'], int(settings['mongodb.port']))
     db = client[settings['mongodb.db_name']]
     db.services.create_index("name", unique=True)

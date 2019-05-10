@@ -1,0 +1,22 @@
+# Content-Types
+CONTENT_TYPE_APP_FORM = "application/x-www-form-urlencoded"
+CONTENT_TYPE_APP_NETCDF = "application/x-netcdf"
+CONTENT_TYPE_APP_GZIP = "application/gzip"
+CONTENT_TYPE_APP_HDF5 = "application/x-hdf5"
+CONTENT_TYPE_APP_TAR = "application/x-tar"
+CONTENT_TYPE_APP_ZIP = "application/zip"
+CONTENT_TYPE_APP_JSON = "application/json"
+CONTENT_TYPE_APP_XML = "application/xml"
+CONTENT_TYPE_IMG_GIF = "image/gif"
+CONTENT_TYPE_IMG_JPEG = "image/jpeg"
+CONTENT_TYPE_IMG_PNG = "image/png"
+CONTENT_TYPE_IMG_TIFF = "image/tiff"
+CONTENT_TYPE_TEXT_HTML = "text/html"
+CONTENT_TYPE_TEXT_PLAIN = "text/plain"
+CONTENT_TYPE_TEXT_XML = "text/xml"
+CONTENT_TYPE_TEXT_ANY = "text/*"
+CONTENT_TYPE_ANY = "*/*"
+
+# extra types
+CONTENT_TYPE_APP_JSON_ISO = CONTENT_TYPE_APP_JSON + ";charset=ISO-8859-1"
+CONTENT_TYPE_TEXT_XML_ISO = CONTENT_TYPE_TEXT_XML + ";charset=ISO-8859-1"

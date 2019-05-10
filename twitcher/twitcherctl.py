@@ -1,12 +1,12 @@
+from twitcher.client import TwitcherService
+import os
 import sys
 import getpass
 import argcomplete
 import argparse
-
-from twitcher.client import TwitcherService
-
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARN)
+LOGGER_LEVEL = os.getenv('TWITCHER_LOGGER_LEVEL', logging.WARN)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGGER_LEVEL)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -15,13 +15,17 @@ class TwitcherCtl(object):
     Command line to interact with the xmlrpc interface of the ``twitcher`` service.
     """
 
-    def create_parser(self):
+    @staticmethod
+    def create_parser():
         parser = argparse.ArgumentParser(
             prog="twitcherctl",
             description='twitcherctl -- control twitcher service from the cmd line.',
         )
-        parser.add_argument("--debug",
+        parser.add_argument('-d', "--debug",
                             help="Enable debug mode.",
+                            action="store_true")
+        parser.add_argument('-q', "--quiet",
+                            help="Enable quiet mode.",
                             action="store_true")
         parser.add_argument('-s', '--serverurl',
                             metavar='URL',
@@ -42,8 +46,8 @@ class TwitcherCtl(object):
             description='List of available commands',
         )
 
-        # token managment
-        # ---------------
+        # token management
+        # ----------------
 
         # gentoken
         subparser = subparsers.add_parser('gentoken', help="Generates an access token.")
@@ -95,9 +99,12 @@ class TwitcherCtl(object):
 
         return parser
 
-    def run(self, args):
+    @staticmethod
+    def run(args):
         if args.debug:
             LOGGER.setLevel(logging.DEBUG)
+        if args.quiet:
+            logging.disable(sys.maxsize)
 
         if args.insecure:
             LOGGER.warn('disabled certificate verification!')
