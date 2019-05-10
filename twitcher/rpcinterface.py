@@ -1,14 +1,17 @@
 from pyramid.view import view_defaults
-from pyramid_rpc.xmlrpc import xmlrpc_method
 from pyramid.settings import asbool
 
 from twitcher.api import ITokenManager, TokenManager
 from twitcher.api import IRegistry, Registry
+from twitcher.utils import get_twitcher_url, get_settings
 from twitcher.tokengenerator import tokengenerator_factory
 from twitcher.store import tokenstore_factory
 from twitcher.store import servicestore_factory
-
+from typing import TYPE_CHECKING
 import logging
+if TYPE_CHECKING:
+    from twitcher.typedefs import AnySettingsContainer  # noqa: F401
+    from typing import AnyStr                           # noqa: F401
 LOGGER = logging.getLogger("TWITCHER")
 
 
@@ -19,7 +22,7 @@ class RPCInterface(ITokenManager, IRegistry):
         self.tokenmgr = TokenManager(
             tokengenerator_factory(request.registry),
             tokenstore_factory(request.registry))
-        self.srvreg = Registry(servicestore_factory(request.registry))
+        self.srvreg = Registry(servicestore_factory(request))
 
     def generate_token(self, valid_in_hours=1, environ=None):
         """
@@ -76,20 +79,37 @@ class RPCInterface(ITokenManager, IRegistry):
         return self.srvreg.clear_services()
 
 
+def rpc_enabled(container):
+    # type: (AnySettingsContainer) -> bool
+    settings = get_settings(container)
+    return asbool(settings.get('twitcher.rpcinterface', True))
+
+
+def rpc_base_path(container):
+    # type: (AnySettingsContainer) -> AnyStr
+    settings = get_settings(container)
+    return settings.get('twitcher.rpc_path', '').rstrip('/').strip()
+
+
+def rpc_base_url(container):
+    # type: (AnySettingsContainer) -> AnyStr
+    twitcher_url = get_twitcher_url(container)
+    rpc_path = rpc_base_path(container)
+    return twitcher_url + rpc_path
+
+
 def includeme(config):
     """ The callable makes it possible to include rpcinterface
     in a Pyramid application.
 
-    Calling ``config.include(twitcher.rpcinterface)`` will result in this
+    Calling ``config.include('twitcher.rpcinterface')`` will result in this
     callable being called.
 
     Arguments:
 
     * ``config``: the ``pyramid.config.Configurator`` object.
     """
-    settings = config.registry.settings
-
-    if asbool(settings.get('twitcher.rpcinterface', True)):
+    if rpc_enabled(config):
         LOGGER.debug('Twitcher XML-RPC Interface enabled.')
 
         # include twitcher config
@@ -102,7 +122,7 @@ def includeme(config):
         # http://docs.pylonsproject.org/projects/pyramid-rpc/en/latest/xmlrpc.html
         config.include('pyramid_rpc.xmlrpc')
         # config.include('twitcher.db')
-        config.add_xmlrpc_endpoint('api', '/RPC2')
+        config.add_xmlrpc_endpoint('api', rpc_base_path(config))
 
         # register xmlrpc methods
         config.add_xmlrpc_method(RPCInterface, attr='generate_token', endpoint='api', method='generate_token')

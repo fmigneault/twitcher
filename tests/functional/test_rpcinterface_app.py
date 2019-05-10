@@ -1,23 +1,20 @@
 """
-Testing the Twithcer XML-RPC interface.
+Testing the Twitcher XML-RPC interface.
 """
 import pytest
 import unittest
 import webtest
 import pyramid.testing
 
-from .common import call_FUT
-from .common import setup_with_mongodb
-from .common import setup_mongodb_tokenstore
-from .common import setup_mongodb_servicestore
-from .common import WPS_TEST_SERVICE
+from tests.common import call_FUT, WPS_TEST_SERVICE
+from tests.utils import setup_config_with_mongodb, setup_mongodb_servicestore, setup_mongodb_tokenstore
 
 
 @pytest.mark.functional
 class XMLRPCInterfaceAppTest(unittest.TestCase):
 
     def setUp(self):
-        config = setup_with_mongodb()
+        config = setup_config_with_mongodb()
         self.token = setup_mongodb_tokenstore(config)
         setup_mongodb_servicestore(config)
         config.include('twitcher.rpcinterface')

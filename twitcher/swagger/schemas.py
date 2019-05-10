@@ -3,14 +3,18 @@ This module should contain any and every definitions in use to build the swagger
 so that one can update the swagger without touching any other files after the initial integration
 """
 
-from cornice import Service
-from colander import drop, MappingSchema, SequenceSchema, String, Boolean, OneOf
+from cornice import Service as SwaggerService
+from colander import drop, MappingSchema, SequenceSchema, String, Boolean, OneOf    # don't import SchemaNode
+from twitcher.swagger.colander_defaults import SchemaNodeDefault as SchemaNode      # replace colander's implementation
 from twitcher.adapter import TWITCHER_ADAPTER_DEFAULT
-from twitcher.restapi.colander_defaults import SchemaNodeDefault as SchemaNode  # replace colander's implementation
-from twitcher.restapi.utils import restapi_base_path
-from twitcher.restapi.colander_one_of import OneOfMappingSchema
 from twitcher.formats import CONTENT_TYPE_APP_JSON, CONTENT_TYPE_APP_XML, CONTENT_TYPE_TEXT_XML, CONTENT_TYPE_TEXT_HTML
+from twitcher.restapi.utils import restapi_base_path
+from twitcher.utils import get_settings
 from twitcher import __meta__
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from twitcher.typedefs import AnySettingsContainer
+    from typing import AnyStr, Dict
 
 FORMAT_URL = "url"
 
@@ -24,19 +28,43 @@ API_INFO = {
     }
 }
 
+
+#################################################################
+# Utility methods
+#################################################################
+
+def swagger_base_path(container):
+    # type: (AnySettingsContainer) -> AnyStr
+    settings = get_settings(container)
+    return settings.get('twitcher.swagger_path', '/doc')
+
+
+def service_swagger_route_info(service_api, container):
+    # type: (SwaggerService, AnySettingsContainer) -> Dict[AnyStr, AnyStr]
+    return {'name': service_api.name,
+            'pattern': '{base}{path}'.format(base=swagger_base_path(container), path=service_api.path)}
+
+
+def service_restapi_route_info(service_api, container):
+    # type: (SwaggerService, AnySettingsContainer) -> Dict[AnyStr, AnyStr]
+    return {'name': service_api.name,
+            'pattern': '{base}{path}'.format(base=restapi_base_path(container), path=service_api.path)}
+
+
 #########################################################################
-# API endpoints
+# API endpoints (without corresponding 'base' paths)
 #########################################################################
 
-api_frontpage_uri = '/'
-api_swagger_ui_uri = '/doc'
-api_swagger_json_uri = '/json'
-api_versions_uri = '/versions'
+swagger_ui_uri = '/'
+swagger_json_uri = '/json'
 
-service_var = 'service_name'
-service_var_key = '{' + service_var + '}'
-services_uri = '/services'
-service_uri = '/services/' + service_var_key
+restapi_frontpage_uri = '/'
+restapi_versions_uri = '/versions'
+
+restapi_service_var = 'service_name'
+restapi_service_var_key = '{' + restapi_service_var + '}'
+restapi_services_uri = '/services'
+restapi_service_uri = '/services/' + restapi_service_var_key
 
 #########################################################
 # API tags
@@ -49,19 +77,19 @@ TagServices = 'Services'
 # These "services" are wrappers that allow Cornice to generate the JSON API
 ###############################################################################
 
-api_frontpage_service = Service(name='api_frontpage', path=api_frontpage_uri)
-api_swagger_ui_service = Service(name='api_swagger_ui', path=api_swagger_ui_uri)
-api_swagger_json_service = Service(name='api_swagger_json', path=api_swagger_json_uri)
-api_versions_service = Service(name='api_versions', path=api_versions_uri)
+swagger_ui_service = SwaggerService(name='api_swagger_ui', path=swagger_ui_uri)
+swagger_json_service = SwaggerService(name='api_swagger_json', path=swagger_json_uri)
 
-services_service = Service(name='services', path=services_uri)
-service_service = Service(name='service', path=service_uri)
+restapi_frontpage_service = SwaggerService(name='api_frontpage', path=restapi_frontpage_uri)
+restapi_versions_service = SwaggerService(name='api_versions', path=restapi_versions_uri)
+restapi_services_service = SwaggerService(name='services', path=restapi_services_uri)
+restapi_service_service = SwaggerService(name='service', path=restapi_service_uri)
 
 #########################################################
 # Path parameter definitions
 #########################################################
 
-service_id = SchemaNode(String(), description='The service id')
+service_name_param = SchemaNode(String(), description='Service name identifier')
 
 
 #########################################################
@@ -116,7 +144,7 @@ class SwaggerUIEndpoint(MappingSchema):
 
 class ServiceEndpoint(MappingSchema):
     header = AcceptHeader()
-    service_id = service_id
+    service_name = service_name_param
 
 
 ##################################################################
@@ -305,13 +333,3 @@ post_service_responses = {
     '201': CreatedPostService(description='success'),
     '401': UnauthorizedJsonResponseSchema(description='unauthorized'),
 }
-
-
-#################################################################
-# Utility methods
-#################################################################
-
-
-def service_api_route_info(service_api, settings):
-    api_base = restapi_base_path(settings)
-    return {'name': service_api.name, 'pattern': '{base}{path}'.format(base=api_base, path=service_api.path)}

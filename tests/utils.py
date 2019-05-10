@@ -12,6 +12,8 @@ from pyramid import testing
 from pyramid.response import Response
 from webtest import TestApp
 from typing import TYPE_CHECKING
+import pymongo
+import unittest
 import warnings
 import mock
 import os
@@ -19,19 +21,53 @@ if TYPE_CHECKING:
     from twitcher.store.mongodb import MongodbServiceStore
     from twitcher.datatype import AccessToken
     from twitcher.typedefs import AnySettingsContainer, SettingsType
-    from typing import Any, AnyStr, Dict, Optional
+    from typing import Any, AnyStr, Callable, Dict, Iterable, Optional, Type, Union
     from pyramid.config import Configurator
     from pyramid.registry import Registry
+    AnyRegex = Union[AnyStr, Iterable[AnyStr]]
+    AnyWarning = Union[Type[Warning], Iterable[Type[Warning]]]
+    AnyTestCase = Union[unittest.TestCase, Callable]
 
 
-def ignore_wps_warnings(test_case):
-    """Decorator that eliminates WPS related warnings during test execution logging."""
+def ignore_warnings(message_regex=None, warning_types=None):
+    # type: (Optional[AnyRegex], Optional[AnyWarning]) -> Callable[[AnyTestCase], Callable]
+    """
+    Decorator that eliminates warnings during test execution logging filtered by specified messages and/or types if any.
+
+    :param message_regex: one or many string regex to use for filtering matching warning messages to be ignored.
+    :param warning_types: one or many `Warning` classes to use for filtering warning types to be ignored.
+    """
+    if not isinstance(message_regex, (list, tuple, set)):
+        if message_regex is None:
+            message_regex = ""
+        message_regex = [message_regex]
+    if not isinstance(warning_types, (list, tuple, set)):
+        if warning_types is None:
+            warning_types = Warning
+        warning_types = [warning_types]
+
+    def decorator(test_case):
+        def do_test(self, *args, **kwargs):
+            with warnings.catch_warnings():
+                for warn in warning_types:
+                    for msg in message_regex:
+                        warnings.filterwarnings(action="ignore", message=msg, category=warn)
+                test_case(self, *args, **kwargs)
+        return do_test
+    return decorator
+
+
+def ignore_warnings_ows(test_case):
+    """
+    Specialized decorator that eliminates OWS WPS/WMS related warnings during test execution logging.
+
+    .. seealso::
+        :func:`ignore_warnings`
+    """
+    @ignore_warnings(message_regex=["Parameter 'request*", "Parameter 'service*"],
+                     warning_types=[MissingParameterWarning, UnsupportedOperationWarning])
     def do_test(self, *args, **kwargs):
-        with warnings.catch_warnings():
-            for warn in [MissingParameterWarning, UnsupportedOperationWarning]:
-                for msg in ["Parameter 'request*", "Parameter 'service*"]:
-                    warnings.filterwarnings(action="ignore", message=msg, category=warn)
-            test_case(self, *args, **kwargs)
+        test_case(self, *args, **kwargs)
     return do_test
 
 
@@ -98,25 +134,88 @@ def setup_mongodb_servicestore(container):
     return store
 
 
+class DummyCollection(list):
+    """Mocks :class:`pymongo.collection.Collection` for test execution."""
+    def __init__(self, seq=(), name='DummyCollection'):
+        super(DummyCollection, self).__init__(seq)
+        self.name = name
+
+    @staticmethod
+    def _get_kwargs(*args, **kwargs):
+        for a in args:
+            if isinstance(a, dict):
+                kwargs.update(a)
+        return kwargs
+
+    def drop(self):
+        self.clear()
+
+    def find(self, *args, **kwargs):
+        kwargs = self._get_kwargs(*args, **kwargs)
+        # re-use dummy collection to allow chaining of operations (ex: `collection.find().sort()`)
+        return DummyCollection([i for i in self if all(getattr(i, k) == v for k, v in kwargs.items())])
+
+    # noinspection PyMethodOverriding
+    def sort(self, attribute=None, order=pymongo.ASCENDING):
+        if attribute:
+            key = lambda i: getattr(i, attribute)
+        else:
+            key = None
+        return DummyCollection(sorted(list(self), key=key, reverse=order == pymongo.DESCENDING))
+
+    def find_one(self, *args, **kwargs):
+        items = self.find(*args, **kwargs)
+        return None if not len(items) > 0 else items[0]
+
+    def insert_one(self, item):
+        self.append(item)
+
+    def delete_one(self, *args, **kwargs):
+        item = self.find_one(*args, **kwargs)
+        if item:
+            self.remove(item)
+
+    def count_documents(self, *args, **kwargs):
+        return len(self.find(*args, **kwargs))
+
+
 class DummyMongo(object):
-    pass
+    """Mocks :class:`pymongo.mongo_client.MongoClient` for test execution."""
+    def __init__(self, container):
+        self.settings = get_settings(container)
+        self.fake_mongodb_host = self.settings.get('mongodb.host')
+        self.fake_mongodb_port = self.settings.get('mongodb.port')
+        self.fake_mongodb_db_name = self.settings.get('mongodb.db_name')
+        if self.fake_mongodb_host and self.fake_mongodb_port:
+            self.fake_mongodb_uri = '{}:{}'.format(self.fake_mongodb_host, self.fake_mongodb_port)
+        elif self.fake_mongodb_host:
+            self.fake_mongodb_uri = self.fake_mongodb_host
+        else:
+            self.fake_mongodb_uri = None
+        if self.fake_mongodb_uri and self.fake_mongodb_db_name:
+            self.fake_mongodb_uri += '/{}'.format(self.fake_mongodb_db_name)
+        if self.fake_mongodb_uri and not self.fake_mongodb_uri.startswith('mongodb://'):
+            self.fake_mongodb_uri = 'mongodb://' + self.fake_mongodb_uri
+        self.services = DummyCollection(name='services')
+        self.tokens = DummyCollection(name='tokens')
 
 
 # TODO:
-#   we should remove all 'MemoryStore' and generic 'Store' implementations to use similar mock method
-#   this way we make sure that we evaluate real application code (except the specific mock) and don't
-#   introduce variations directly in the code only for testing purposes
+#   we should remove all 'MemoryStore' implementations to use this mock method with above 'dummy' implementations
+#   this way we make sure that we evaluate real application code (except the specifically mocked db functions) so
+#   we don't introduce variations directly in the code only for testing purposes
 def mock_mongodb(test_case):
     """
-    Decorator that mocks the call to :func:`twitcher.db.mongodb` with minimal properties to allow non-breaking
+    Decorator that mocks calls to :func:`twitcher.db.mongodb` with minimal properties to allow non-breaking
     code execution when no actual connection is required.
     (ie: avoids errors during configuration loading and class instantiations)
     """
     def call_mongodb(*call_args, **call_kwargs):
-        return DummyMongo()
+        return DummyMongo(call_args[0])
 
     def do_test(self, *args, **kwargs):
-        with mock.patch('twitcher.db.mongodb', side_effect=call_mongodb):
+        with mock.patch('twitcher.db.mongodb', side_effect=call_mongodb), \
+             mock.patch('twitcher.store._mongodb', side_effect=call_mongodb):
             test_case(self, *args, **kwargs)
     return do_test
 

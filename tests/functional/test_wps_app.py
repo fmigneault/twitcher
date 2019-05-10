@@ -11,17 +11,17 @@ import unittest
 import webtest
 import pyramid.testing
 
-from .common import call_FUT
-from .common import setup_with_mongodb, setup_mongodb_tokenstore
-from .common import WPS_TEST_SERVICE
+from tests.common import call_FUT, WPS_TEST_SERVICE
+from tests.utils import setup_config_with_mongodb, setup_mongodb_tokenstore, setup_mongodb_servicestore
 
 
 @pytest.mark.functional
 class WpsAppTest(unittest.TestCase):
 
     def setUp(self):
-        config = setup_with_mongodb()
+        config = setup_config_with_mongodb()
         self.token = setup_mongodb_tokenstore(config)
+        self.services = setup_mongodb_servicestore(config)
         config.include('twitcher.rpcinterface')
         config.include('twitcher.owsproxy')
         config.include('twitcher.tweens')

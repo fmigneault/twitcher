@@ -2,7 +2,7 @@ import pytest
 import unittest
 import webtest
 from pyramid import testing
-from .common import setup_with_mongodb
+from tests.utils import setup_config_with_mongodb
 
 from twitcher.store import servicestore_factory
 
@@ -11,7 +11,7 @@ from twitcher.store import servicestore_factory
 class OWSProxyAppTest(unittest.TestCase):
 
     def setUp(self):
-        config = setup_with_mongodb()
+        config = setup_config_with_mongodb()
         self.setup_registry(config)
         config.include('twitcher.owsproxy')
         config.include('twitcher.tweens')

@@ -24,6 +24,7 @@ class MongodbStore(object):
     """
 
     def __init__(self, collection):
+        # type: (pymongo.collection.Collection) -> None
         self.collection = collection
 
 

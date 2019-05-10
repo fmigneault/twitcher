@@ -22,6 +22,7 @@ from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPUnauthorized,
     HTTPNotFound,
+    HTTPMethodNotAllowed,
     HTTPNotAcceptable,
     HTTPInternalServerError,
     HTTPNotImplemented,
@@ -44,6 +45,7 @@ class OWSException(Response, Exception):
     value = None
     locator = "NoApplicableCode"
     explanation = "Unknown Error"
+    status_code = 500
 
     page_template = Template('''\
 <?xml version="1.0" encoding="utf-8"?>
@@ -57,12 +59,16 @@ class OWSException(Response, Exception):
 </ExceptionReport>''')
 
     def __init__(self, detail=None, value=None, **kw):
-        status = kw.pop("status", None)
+        for arg in [detail, value]:
+            if isinstance(arg, dict):
+                for k, v in arg.items():
+                    kw.setdefault(k, v)
+        status = kw.pop("status", "{} {}".format(self.status_code, self.explanation))
         if isinstance(status, type) and issubclass(status, HTTPException):
             status = status().status
         elif isinstance(status, str):
             try:
-                int(status.split()[0])
+                self._code_from_status(status)
             except Exception:
                 raise ValueError("status specified as string must be of format '<code> <title>'")
         elif isinstance(status, HTTPException):
@@ -71,6 +77,8 @@ class OWSException(Response, Exception):
             status = HTTPOk().status
         Response.__init__(self, status=status, **kw)
         Exception.__init__(self, detail)
+        self.status_code = self._code_from_status(status)
+        self.status = status
         # get specified 'message' and use it if it is valid, otherwise use the 'default' explanation
         if isinstance(detail, tuple) and len(detail) and len(detail[0]):
             detail = detail[0]
@@ -81,12 +89,17 @@ class OWSException(Response, Exception):
     def __str__(self, skip_body=False):
         return self.message
 
+    @staticmethod
+    def _code_from_status(status):
+        # type: (AnyStr) -> int
+        return int(status.split()[0])
+
     # noinspection PyUnusedLocal
     @staticmethod
     def json_formatter(status, body, title, environ):
         # type: (AnyStr, AnyStr, AnyStr, SettingsType) -> Dict[AnyStr, Union[AnyStr, int]]
         body = clean_json_text_body(body)
-        return {"description": body, "code": int(status.split()[0]), "status": status, "title": title}
+        return {"description": body, "code": OWSException._code_from_status(status), "status": status, "title": title}
 
     def prepare(self, environ):
         if not self.body:
@@ -195,33 +208,45 @@ class OWSBadRequest(OWSException):
 
     def __init__(self, *args, **kwargs):
         kwargs["status"] = HTTPBadRequest
-        super(OWSBadRequest, self).__init__(args, kwargs)
+        super(OWSBadRequest, self).__init__(*args, **kwargs)
 
 
 OWSAccessFailed = OWSBadRequest  # backward compatibility
 
 
-class OWSNoApplicableCode(OWSException):
-    """WPS Bad Request Exception"""
+class OWSNoApplicableBase(OWSException):
+    """WPS Exception for not applicable code (invalid route, method, etc.)"""
     code = "NoApplicableCode"
     locator = ""
-    explanation = "Parameter value is missing"
+    explanation = "Operation is not applicable."
 
     def __init__(self, *args, **kwargs):
-        kwargs["status"] = HTTPBadRequest
-        super(OWSNoApplicableCode, self).__init__(args, kwargs)
         warnings.warn(self.message, UnsupportedOperationWarning)
+
+
+class OWSNoApplicableCode(OWSNoApplicableBase):
+    """WPS Bad Request Exception"""
+    def __init__(self, *args, **kwargs):
+        kwargs["status"] = HTTPBadRequest
+        super(OWSNoApplicableCode, self).__init__(*args, **kwargs)
+
+
+class OWSNoApplicableMethod(OWSNoApplicableBase):
+    """WPS Method Not Allowed Exception"""
+    def __init__(self, *args, **kwargs):
+        kwargs["status"] = HTTPMethodNotAllowed
+        super(OWSNoApplicableMethod, self).__init__(*args, **kwargs)
 
 
 class OWSMissingParameterValue(OWSException):
     """MissingParameterValue WPS Exception"""
     code = "MissingParameterValue"
     locator = ""
-    explanation = "Parameter value is missing"
+    explanation = "Parameter value is missing."
 
     def __init__(self, *args, **kwargs):
         kwargs["status"] = HTTPBadRequest
-        super(OWSMissingParameterValue, self).__init__(args, kwargs)
+        super(OWSMissingParameterValue, self).__init__(*args, **kwargs)
         warnings.warn(self.message, MissingParameterWarning)
 
 
@@ -229,11 +254,11 @@ class OWSInvalidParameterValue(OWSException):
     """InvalidParameterValue WPS Exception"""
     code = "InvalidParameterValue"
     locator = ""
-    explanation = "Parameter value is not acceptable."
+    explanation = "Parameter value is not valid."
 
     def __init__(self, *args, **kwargs):
         kwargs["status"] = HTTPBadRequest
-        super(OWSInvalidParameterValue, self).__init__(args, kwargs)
+        super(OWSInvalidParameterValue, self).__init__(*args, **kwargs)
         warnings.warn(self.message, UnsupportedOperationWarning)
 
 
@@ -244,7 +269,7 @@ class OWSNotApplicable(OWSException):
 
     def __init__(self, *args, **kwargs):
         kwargs["status"] = HTTPInternalServerError
-        super(OWSNotApplicable, self).__init__(args, kwargs)
+        super(OWSNotApplicable, self).__init__(*args, **kwargs)
 
 
 class OWSNotImplemented(OWSException):
@@ -254,5 +279,19 @@ class OWSNotImplemented(OWSException):
 
     def __init__(self, *args, **kwargs):
         kwargs["status"] = HTTPNotImplemented
-        super(OWSNotImplemented, self).__init__(args, kwargs)
+        super(OWSNotImplemented, self).__init__(*args, **kwargs)
         warnings.warn(self.message, UnsupportedOperationWarning)
+
+
+OWS_EXCEPTION_CODE_MAP = {
+    401: OWSAccessUnauthorized,
+    403: OWSAccessForbidden,
+    404: OWSNotFound,
+    405: OWSNoApplicableMethod,
+    406: OWSNotAcceptable,
+    # TODO: routes that require an AccessToken when it is not provided show return:
+    #   407 Proxy Authentication Required
+    #   https://www.restapitutorial.com/httpstatuscodes.html
+    500: OWSNotApplicable,
+    501: OWSNotImplemented,
+}

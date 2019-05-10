@@ -1,27 +1,26 @@
 from pyramid.httpexceptions import HTTPFound
-from twitcher.restapi.schemas import (
-    api_frontpage_uri,
-    api_versions_uri,
-    api_swagger_ui_uri,
-    api_swagger_json_uri,
-    api_swagger_json_service,
+from twitcher.swagger.schemas import (
+    restapi_frontpage_uri,
+    restapi_versions_uri,
+    swagger_ui_uri,
+    swagger_json_uri,
+    swagger_json_service,
     API_TITLE,
     FrontpageSchema,
     VersionsSchema,
 )
 from twitcher.adapter import TWITCHER_ADAPTER_DEFAULT
-from tests.utils import get_test_twitcher_app, get_test_twitcher_config, get_settings_from_testapp
+from tests.utils import get_test_twitcher_app, get_test_twitcher_config, get_settings_from_testapp, mock_mongodb
 import colander
 import unittest
-import pytest
 import mock
 import os
 
 
-@pytest.mark.mongo
 class GenericApiRoutesTestCase(unittest.TestCase):
 
     @classmethod
+    @mock_mongodb
     def setUpClass(cls):
         settings = {'twitcher.adapter': TWITCHER_ADAPTER_DEFAULT}
         config = get_test_twitcher_config()
@@ -30,7 +29,7 @@ class GenericApiRoutesTestCase(unittest.TestCase):
         cls.json_headers = {'Accept': cls.json_app, 'Content-Type': cls.json_app}
 
     def test_frontpage_format(self):
-        resp = self.testapp.get(api_frontpage_uri, headers=self.json_headers)
+        resp = self.testapp.get(restapi_frontpage_uri, headers=self.json_headers)
         assert 200 == resp.status_code
         try:
             FrontpageSchema().deserialize(resp.json)
@@ -38,7 +37,7 @@ class GenericApiRoutesTestCase(unittest.TestCase):
             self.fail("expected valid response format as defined in schema [{!s}]".format(ex))
 
     def test_version_format(self):
-        resp = self.testapp.get(api_versions_uri, headers=self.json_headers)
+        resp = self.testapp.get(restapi_versions_uri, headers=self.json_headers)
         assert 200 == resp.status_code
         try:
             VersionsSchema().deserialize(resp.json)
@@ -46,11 +45,11 @@ class GenericApiRoutesTestCase(unittest.TestCase):
             self.fail("expected valid response format as defined in schema [{!s}]".format(ex))
 
     def test_swagger_api_format(self):
-        resp = self.testapp.get(api_swagger_ui_uri)
+        resp = self.testapp.get(swagger_ui_uri)
         assert 200 == resp.status_code
-        assert "<title>{}</title>".format(API_TITLE) in resp.body
+        assert "<title>{}</title>".format(API_TITLE) in resp.text
 
-        resp = self.testapp.get(api_swagger_json_uri, headers=self.json_headers)
+        resp = self.testapp.get(swagger_json_uri, headers=self.json_headers)
         assert 200 == resp.status_code
         assert 'tags' in resp.json
         assert 'info' in resp.json
@@ -60,19 +59,19 @@ class GenericApiRoutesTestCase(unittest.TestCase):
         assert 'basePath' in resp.json
 
 
-@pytest.mark.mongo
 class AlternativeProxyBaseUrlApiRoutesTestCase(unittest.TestCase):
 
     # noinspection PyUnusedLocal
     @staticmethod
     def redirect_api_view(request):
-        return HTTPFound(location=api_swagger_json_service.path)
+        return HTTPFound(location=swagger_json_service.path)
 
     @classmethod
+    @mock_mongodb
     def setUpClass(cls):
         # derived path for testing simulated server proxy pass
         cls.proxy_api_base_path = '/twitcher/rest'
-        cls.proxy_api_base_name = api_swagger_json_service.name + '_proxy'
+        cls.proxy_api_base_name = swagger_json_service.name + '_proxy'
 
         # create redirect view to simulate the server proxy pass
         settings = {'twitcher.adapter': TWITCHER_ADAPTER_DEFAULT}
@@ -100,18 +99,18 @@ class AlternativeProxyBaseUrlApiRoutesTestCase(unittest.TestCase):
             assert resp.json['basePath'] == self.proxy_api_base_path
 
             # validate that swagger UI still renders and has valid URL
-            resp = self.testapp.get(api_swagger_ui_uri)
+            resp = self.testapp.get(swagger_ui_uri)
             assert 200 == resp.status_code
-            assert "<title>{}</title>".format(API_TITLE) in resp.body
+            assert "<title>{}</title>".format(API_TITLE) in resp.text
 
     def test_swagger_api_request_base_path_original(self):
         """
         Validates that Swagger JSON properly uses the original host/path to test live requests on Swagger UI
         when the app's URI results direct route access.
         """
-        resp = self.testapp.get(api_swagger_ui_uri)
+        resp = self.testapp.get(swagger_ui_uri)
         assert 200 == resp.status_code
-        assert "<title>{}</title>".format(API_TITLE) in resp.body
+        assert "<title>{}</title>".format(API_TITLE) in resp.text
 
         # ensure that environment that would define the twitcher location is not defined for local app
         with mock.patch.dict('os.environ'):
@@ -120,9 +119,9 @@ class AlternativeProxyBaseUrlApiRoutesTestCase(unittest.TestCase):
             resp = resp.follow()
             assert 200 == resp.status_code
             assert self.proxy_api_base_path not in resp.json['host']
-            assert resp.json['basePath'] == api_frontpage_uri
+            assert resp.json['basePath'] == restapi_frontpage_uri
 
             # validate that swagger UI still renders and has valid URL
-            resp = self.testapp.get(api_swagger_ui_uri)
+            resp = self.testapp.get(swagger_ui_uri)
             assert 200 == resp.status_code
-            assert "<title>{}</title>".format(API_TITLE) in resp.body
+            assert "<title>{}</title>".format(API_TITLE) in resp.text

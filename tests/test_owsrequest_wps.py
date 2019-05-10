@@ -6,10 +6,10 @@ from pyramid.testing import DummyRequest
 
 from twitcher.owsrequest import OWSRequest
 from twitcher.owsexceptions import OWSInvalidParameterValue, OWSMissingParameterValue
-from tests.utils import ignore_wps_warnings
+from tests.utils import ignore_warnings_ows
 
 
-@ignore_wps_warnings
+@ignore_warnings_ows
 class OWSRequestWpsTestCase(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
